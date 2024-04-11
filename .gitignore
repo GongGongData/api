@@ -297,4 +297,5 @@ fabric.properties
 ################################################ CUSTOM ################################################
 secrets.json
 secrets.json.backup
+secrets-api-key.json
 /datadir
