@@ -25,23 +25,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 secret_file = os.path.join(BASE_DIR, 'secrets.json')
 api_key_file = os.path.join(BASE_DIR, 'secrets-api-key.json')
 
-with open(secret_file) as f:
-    secrets = json.loads(f.read())
 
-with open(api_key_file) as f:
-    secret_api_key = json.loads(f.read())
-
-
-def get_secret(key, secrets=secrets):
-    try:
-        return secrets[key]
-    except KeyError:
-        error_msg = "Set the {} ENV".format(key)
-        raise ImproperlyConfigured(error_msg)
+def get_secret(file, key):
+    with open(file) as f:
+        secrets = json.loads(f.read())
+        try:
+            return secrets[key]
+        except KeyError:
+            error_msg = "Set the {} ENV".format(key)
+            raise ImproperlyConfigured(error_msg)
 
 
-SECRET_KEY = get_secret("SECRET_KEY")
-API_KEY = get_secret("API_KEY")
+SECRET_KEY = get_secret(secret_file, "SECRET_KEY")
+API_KEY = get_secret(api_key_file, "API_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -94,7 +90,7 @@ WSGI_APPLICATION = "gonggongapp.wsgi.application"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
-    "default": get_secret("MYSQL")
+    "default": get_secret(secret_file, "MYSQL")
 }
 
 # Password validation
