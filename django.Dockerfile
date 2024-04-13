@@ -7,12 +7,12 @@ RUN python -m pip install --upgrade pip
 RUN pip install django
 RUN pip install pipenv
 
-COPY . /app
+COPY --chmod=765 . /app
 WORKDIR /app
 
 COPY ./secrets-docker.json ./secrets.json
 
 RUN pipenv install --dev --system --deploy
 
-CMD ["python3", "manage.py", "migrate"]
-CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
+
+CMD ["./django-entrypoint.sh"]
