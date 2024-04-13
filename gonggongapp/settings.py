@@ -22,8 +22,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-secret_file = os.path.join(BASE_DIR, 'secrets.json')
-api_key_file = os.path.join(BASE_DIR, 'secrets-api-key.json')
+secret_file = os.path.join(BASE_DIR, "secrets.json")
+api_key_file = os.path.join(BASE_DIR, "secrets-api-key.json")
 
 
 def get_secret(file, key):
@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "test.apps.TestConfig",
 ]
 
 MIDDLEWARE = [
@@ -70,8 +71,7 @@ ROOT_URLCONF = "gonggongapp.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / 'templates']
-        ,
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -89,9 +89,7 @@ WSGI_APPLICATION = "gonggongapp.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    "default": get_secret(secret_file, "MYSQL")
-}
+DATABASES = {"default": get_secret(secret_file, "MYSQL")}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
