@@ -11,7 +11,8 @@ from .models import SeoulMunicipalArtMuseum
 
 def test1(request):
     api_key = API_KEY
-    api_url = f"http://openapi.seoul.go.kr:8088/{api_key}/json/ListExhibitionOfSeoulMOAInfo/1/10/"
+    api_url = SeoulMunicipalArtMuseum.get_api_url(api_key, 1, 1000)
+
     response = requests.get(api_url)
 
     if response.status_code == 200:
@@ -30,28 +31,7 @@ def test1(request):
                 clean_text = soup.get_text()
 
                 # SeoulMunicipalArtMuseum 모델의 각 필드에 맞게 데이터를 추출하여 모델 인스턴스 생성 및 저장
-                exhibition = SeoulMunicipalArtMuseum(
-                    DP_EX_NO=exhibition_data.get("DP_EX_NO", ""),
-                    DP_SEQ=exhibition_data.get("DP_SEQ", ""),
-                    DP_NAME=exhibition_data.get("DP_NAME", ""),
-                    DP_SUBNAME=exhibition_data.get("DP_SUBNAME", ""),
-                    DP_PLACE=exhibition_data.get("DP_PLACE", ""),
-                    DP_START=exhibition_data.get("DP_START", ""),
-                    DP_END=exhibition_data.get("DP_END", ""),
-                    DP_HOMEPAGE=exhibition_data.get("DP_HOMEPAGE", ""),
-                    DP_EVENT=exhibition_data.get("DP_EVENT", ""),
-                    DP_SPONSOR=exhibition_data.get("DP_SPONSOR", ""),
-                    DP_VIEWTIME=exhibition_data.get("DP_VIEWTIME", ""),
-                    DP_VIEWCHARGE=exhibition_data.get("DP_VIEWCHARGE", ""),
-                    DP_ART_PART=exhibition_data.get("DP_ART_PART", ""),
-                    DP_ART_CNT=exhibition_data.get("DP_ART_CNT", ""),
-                    DP_ARTIST=exhibition_data.get("DP_ARTIST", ""),
-                    DP_VIEWPOINT=exhibition_data.get("DP_VIEWPOINT", ""),
-                    DP_INFO=clean_text,
-                    DP_MAIN_IMG=exhibition_data.get("DP_MAIN_IMG", ""),
-                    DP_LNK=exhibition_data.get("DP_LNK", ""),
-                    DP_DATE=exhibition_data.get("DP_DATE", ""),
-                )
+                exhibition = SeoulMunicipalArtMuseum.of(exhibition_data, clean_text)
                 exhibition.save()
 
         return JsonResponse({"message": "Exhibitions saved successfully."})
