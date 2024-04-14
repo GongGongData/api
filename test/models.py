@@ -55,3 +55,36 @@ class SeoulMunicipalArtMuseum(models.Model):
 
     def __str__(self):
         return self.DP_NAME
+
+
+class SeoulisArtMuseum(models.Model):
+    GA_KNAME = models.CharField(max_length=300)
+    GA_INS_DATE = models.CharField(max_length=300)
+    CODE_N1_NAME = models.CharField(max_length=1000)
+    CODE_N2_NAME = models.CharField(max_length=1000)
+    CODE_N3_NAME = models.CharField(max_length=1000)
+    GA_ADDR1 = models.CharField(max_length=1000)
+    GA_ADDR2 = models.CharField(max_length=1000, blank=True)
+    GA_DETAIL = models.TextField()
+    CODE_A1 = models.CharField(max_length=1000, blank=True)
+
+    @staticmethod
+    def get_api_url(api_key: str, start_index=1, end_index=30):
+        return f"http://openapi.seoul.go.kr:8088/{api_key}/json/tvGonggongArt/{start_index}/{end_index}/"
+
+    @staticmethod
+    def of(json_data):
+        return SeoulisArtMuseum(
+            GA_KNAME=json_data.get("GA_KNAME"),
+            GA_INS_DATE=json_data.get("GA_INS_DATE"),
+            CODE_N1_NAME=json_data.get("CODE_N1_NAME"),
+            CODE_N2_NAME=json_data.get("CODE_N2_NAME"),
+            CODE_N3_NAME=json_data.get("CODE_N3_NAME"),
+            GA_ADDR1=json_data.get("GA_ADDR1"),
+            GA_ADDR2=json_data.get("GA_ADDR2"),
+            GA_DETAIL=json_data.get("GA_DETAIL"),
+            CODE_A1=json_data.get("CODE_A1"),
+        )
+
+    def __str__(self):
+        return self.GA_KNAME

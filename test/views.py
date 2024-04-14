@@ -47,20 +47,27 @@ def geocode_test(request):
     #     result.append(elem.get("DP_PLACE"))
     first = SeoulMunicipalArtMuseum.objects.first()
     geocode_result = gmaps.geocode(first.DP_PLACE, region="kr", language="ko")
-    return JsonResponse({
-        "place": first.DP_PLACE,
-        "result": geocode_result
-    }, status=200)
+    return JsonResponse({"place": first.DP_PLACE, "result": geocode_result}, status=200)
 
 
-# 서울은미술관 현황
+# 서울은 미술관 현황
 def test2(request):
     api_key = SEOUL_API_KEY
-    api_url = f"http://openapi.seoul.go.kr:8088/{api_key}/json/ListExhibitionOfSeoulMOAInfo/1/20"
+    api_url = SeoulisArtMuseum.get_api_url(api_key, 1, 50)
     response = requests.get(api_url)
 
     if response.status_code == 200:
-        return JsonResponse(response.json())
+        data = response.json()
+        exhibitions = data.get("tvGonggongArt", {}).get("row", [])
+        for exhibition_data in exhibitions:
+            # 중복 데이터 확인
+            if not SeoulisArtMuseum.objects.filter(
+                GA_KNAME=exhibition_data.get("GA_KNAME", "")
+            ).exists():
+
+                exhibition = SeoulisArtMuseum.of(exhibition_data)
+                exhibition.save()
+        return JsonResponse({"message": "SeoulisArtMuseum data saved successfully."})
     else:
         error_message = f"Failed to fetch data. Status code: {response.status_code}"
         return JsonResponse({"error_message": error_message}, status=500)

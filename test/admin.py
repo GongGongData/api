@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import SeoulMunicipalArtMuseum
+from .models import *
 
 admin.site.register(SeoulMunicipalArtMuseum)
+admin.site.register(SeoulisArtMuseum)
