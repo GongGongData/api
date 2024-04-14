@@ -1,6 +1,7 @@
+import googlemaps
 from django.shortcuts import render
 from django.http import JsonResponse
-from gonggongapp.settings import API_KEY
+from gonggongapp.settings import SEOUL_API_KEY, GOOGLE_API_KEY
 from .models import *
 
 # Create your views here.
@@ -10,7 +11,7 @@ from .models import SeoulMunicipalArtMuseum
 
 
 def test1(request):
-    api_key = API_KEY
+    api_key = SEOUL_API_KEY
     api_url = SeoulMunicipalArtMuseum.get_api_url(api_key, 1, 1000)
     response = requests.get(api_url)
 
@@ -38,9 +39,23 @@ def test1(request):
         return JsonResponse({"error_message": error_message}, status=500)
 
 
+def geocode_test(request):
+    gmaps = googlemaps.Client(key=GOOGLE_API_KEY)
+    result = []
+    # all = SeoulMunicipalArtMuseum.objects.all()
+    # for elem in all:
+    #     result.append(elem.get("DP_PLACE"))
+    first = SeoulMunicipalArtMuseum.objects.first()
+    geocode_result = gmaps.geocode(first.DP_PLACE, region="kr", language="ko")
+    return JsonResponse({
+        "place": first.DP_PLACE,
+        "result": geocode_result
+    }, status=200)
+
+
 # 서울은미술관 현황
 def test2(request):
-    api_key = API_KEY
+    api_key = SEOUL_API_KEY
     api_url = f"http://openapi.seoul.go.kr:8088/{api_key}/json/ListExhibitionOfSeoulMOAInfo/1/20"
     response = requests.get(api_url)
 

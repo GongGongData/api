@@ -37,7 +37,8 @@ def get_secret(file, key):
 
 
 SECRET_KEY = get_secret(secret_file, "SECRET_KEY")
-API_KEY = get_secret(api_key_file, "API_KEY")
+SEOUL_API_KEY = get_secret(api_key_file, "SEOUL")
+GOOGLE_API_KEY = get_secret(api_key_file, "GOOGLE")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

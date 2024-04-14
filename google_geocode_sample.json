@@ -1,0 +1,144 @@
+{
+  "place": "서울시립미술관 서소문본관",
+  "result": [
+    {
+      "address_components": [
+        {
+          "long_name": "서소문역",
+          "short_name": "서소문역",
+          "types": [
+            "establishment",
+            "point_of_interest",
+            "transit_station"
+          ]
+        },
+        {
+          "long_name": "서울특별시",
+          "short_name": "서울특별시",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "대한민국",
+          "short_name": "KR",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "대한민국 서울특별시 서소문역",
+      "geometry": {
+        "location": {
+          "lat": 37.563462,
+          "lng": 126.9750455
+        },
+        "location_type": "GEOMETRIC_CENTER",
+        "viewport": {
+          "northeast": {
+            "lat": 37.5648109802915,
+            "lng": 126.976394480292
+          },
+          "southwest": {
+            "lat": 37.5621130197085,
+            "lng": 126.973696519709
+          }
+        }
+      },
+      "partial_match": true,
+      "place_id": "ChIJLZbZr4yifDUR7vdFXURqTLY",
+      "plus_code": {
+        "compound_code": "HX7G+92 서울특별시",
+        "global_code": "8Q98HX7G+92"
+      },
+      "types": [
+        "establishment",
+        "point_of_interest",
+        "transit_station"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "61",
+          "short_name": "61",
+          "types": [
+            "premise"
+          ]
+        },
+        {
+          "long_name": "덕수궁길",
+          "short_name": "덕수궁길",
+          "types": [
+            "political",
+            "sublocality",
+            "sublocality_level_4"
+          ]
+        },
+        {
+          "long_name": "중구",
+          "short_name": "중구",
+          "types": [
+            "political",
+            "sublocality",
+            "sublocality_level_1"
+          ]
+        },
+        {
+          "long_name": "서울특별시",
+          "short_name": "서울특별시",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "대한민국",
+          "short_name": "KR",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "100-110",
+          "short_name": "100-110",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "대한민국 서울특별시 중구 덕수궁길 61",
+      "geometry": {
+        "location": {
+          "lat": 37.5640625,
+          "lng": 126.9738125
+        },
+        "location_type": "ROOFTOP",
+        "viewport": {
+          "northeast": {
+            "lat": 37.5654114802915,
+            "lng": 126.975161480292
+          },
+          "southwest": {
+            "lat": 37.5627135197085,
+            "lng": 126.972463519709
+          }
+        }
+      },
+      "partial_match": true,
+      "place_id": "ChIJ7flynb6jfDURr_2yp5gZwmQ",
+      "plus_code": {
+        "compound_code": "HX7F+JG 서울특별시",
+        "global_code": "8Q98HX7F+JG"
+      },
+      "types": [
+        "establishment",
+        "museum",
+        "point_of_interest"
+      ]
+    }
+  ]
+}
