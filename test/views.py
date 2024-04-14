@@ -12,7 +12,6 @@ from .models import SeoulMunicipalArtMuseum
 def test1(request):
     api_key = API_KEY
     api_url = SeoulMunicipalArtMuseum.get_api_url(api_key, 1, 1000)
-
     response = requests.get(api_url)
 
     if response.status_code == 200:
@@ -33,17 +32,16 @@ def test1(request):
                 # SeoulMunicipalArtMuseum 모델의 각 필드에 맞게 데이터를 추출하여 모델 인스턴스 생성 및 저장
                 exhibition = SeoulMunicipalArtMuseum.of(exhibition_data, clean_text)
                 exhibition.save()
-
         return JsonResponse({"message": "Exhibitions saved successfully."})
     else:
         error_message = f"Failed to fetch data. Status code: {response.status_code}"
         return JsonResponse({"error_message": error_message}, status=500)
 
 
-# 서울시립미술관 교육 정보 (교육 프로그램, 교육 기간 대략 1 달 정도)
+# 서울은미술관 현황
 def test2(request):
     api_key = API_KEY
-    api_url = f"http://openapi.seoul.go.kr:8088/{api_key}/json/tvGonggongArt/1/5/"
+    api_url = f"http://openapi.seoul.go.kr:8088/{api_key}/json/ListExhibitionOfSeoulMOAInfo/1/20"
     response = requests.get(api_url)
 
     if response.status_code == 200:
@@ -53,7 +51,7 @@ def test2(request):
         return JsonResponse({"error_message": error_message}, status=500)
 
 
-# 서울은 미술관 현황
+# 서울시립미술관 교육 정보 (교육 프로그램, 교육 기간 대략 1 달 정도)
 def test3(request):
     api_key = ""
     api_url = f"http://openapi.seoul.go.kr:8088/{api_key}/json/ListEducationOfSeoulMOAInfo/1/5/"
