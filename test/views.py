@@ -1,13 +1,17 @@
-import googlemaps
+import googlemaps, requests
 from django.shortcuts import render
 from django.http import JsonResponse
 from gonggongapp.settings import SEOUL_API_KEY, GOOGLE_API_KEY
-from .models import *
+from bs4 import BeautifulSoup
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.renderers import JSONRenderer
 
 # Create your views here.
-import requests
-from bs4 import BeautifulSoup
-from .models import SeoulMunicipalArtMuseum
+
+from .serializers import *
+from .models import *
 
 
 def test1(request):
@@ -97,3 +101,12 @@ def test4(request):
     else:
         error_message = f"Failed to fetch data. Status code: {response.status_code}"
         return JsonResponse({"error_message": error_message}, status=500)
+
+
+class SeoulMunicipalArtMuseumList(APIView):
+    renderer_classes = [JSONRenderer]
+
+    def get(self, request):
+        info_list = SeoulMunicipalArtMuseum.objects.all()[:10]
+        serializer = SeoulMunicipalArtMuseumSerializer(info_list, many=True)
+        return Response(serializer.data)
