@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.renderers import JSONRenderer
+from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
 
 # Create your views here.
 
@@ -68,7 +68,6 @@ def test2(request):
             if not SeoulisArtMuseum.objects.filter(
                 GA_KNAME=exhibition_data.get("GA_KNAME", "")
             ).exists():
-
                 exhibition = SeoulisArtMuseum.of(exhibition_data)
                 exhibition.save()
         return JsonResponse({"message": "SeoulisArtMuseum data saved successfully."})
@@ -104,7 +103,7 @@ def test4(request):
 
 
 class SeoulMunicipalArtMuseumList(APIView):
-    renderer_classes = [JSONRenderer]
+    renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
 
     def get(self, request):
         info_list = SeoulMunicipalArtMuseum.objects.all()[:10]
