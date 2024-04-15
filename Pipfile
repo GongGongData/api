@@ -9,6 +9,7 @@ mysqlclient = "*"
 requests = "*"
 bs4 = "*"
 googlemaps = "*"
+djangorestframework = "*"
 
 [dev-packages]
 

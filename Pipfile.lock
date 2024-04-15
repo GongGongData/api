@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "e37ccdc7d94326075b330e0a408fc6f7cae54f04908c64d96f3d24013205c868"
+            "sha256": "5b4eea46cafa6541f9a2441766a0f044a265697e58ab5c0d155b0dd4597f5fce"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -152,6 +152,15 @@
             "index": "pypi",
             "markers": "python_version >= '3.8'",
             "version": "==4.2.11"
+        },
+        "djangorestframework": {
+            "hashes": [
+                "sha256:3ccc0475bce968608cf30d07fb17d8e52d1d7fc8bfe779c905463200750cbca6",
+                "sha256:f88fad74183dfc7144b2756d0d2ac716ea5b4c7c9840995ac3bfd8ec034333c1"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.6'",
+            "version": "==3.15.1"
         },
         "googlemaps": {
             "hashes": [
