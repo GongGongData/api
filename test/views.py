@@ -14,7 +14,8 @@ from .serializers import *
 from .models import *
 
 
-def test1(request):
+# 서울시립미술관 현황
+def GetSeoulMunicipalArtMuseum(request):
     api_key = SEOUL_API_KEY
     api_url = SeoulMunicipalArtMuseum.get_api_url(api_key, 1, 1000)
     response = requests.get(api_url)
@@ -57,7 +58,7 @@ def geocode_test(request):
 # 서울은 미술관 현황
 def test2(request):
     api_key = SEOUL_API_KEY
-    api_url = SeoulisArtMuseum.get_api_url(api_key, 1, 50)
+    api_url = SeoulisArtMuseum.get_api_url(api_key, 1, 1)
     response = requests.get(api_url)
 
     if response.status_code == 200:
@@ -108,4 +109,13 @@ class SeoulMunicipalArtMuseumList(APIView):
     def get(self, request):
         info_list = SeoulMunicipalArtMuseum.objects.all()[:10]
         serializer = SeoulMunicipalArtMuseumSerializer(info_list, many=True)
+        return Response(serializer.data)
+
+
+class SeoulisArtMuseumList(APIView):
+    renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
+
+    def get(self, request):
+        info_list = SeoulisArtMuseum.objects.all()
+        serializer = SeoulisArtMuseumSerializer(info_list, many=True)
         return Response(serializer.data)

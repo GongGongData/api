@@ -20,15 +20,20 @@ schema_view = get_schema_view(
     permission_classes=(permissions.AllowAny,),
 )
 urlpatterns = [
-    path("test1", views.test1),
+    path("test1", views.GetSeoulMunicipalArtMuseum),
     path("test2", views.test2),
     path("test3", views.test3),
     path("test4", views.test4),
     path("geocode", views.geocode_test),
     path(
-        "test5/",
+        "SeoulMunicipalArtMuseumList/",
         SeoulMunicipalArtMuseumList.as_view(),
         name="seoul_municipal_art_museum_list",
+    ),
+    path(
+        "SeoulisArtMuseumList/",
+        SeoulisArtMuseumList.as_view(),
+        name="seoul_is_art_museum_list",
     ),
 ]
 if settings.DEBUG:
