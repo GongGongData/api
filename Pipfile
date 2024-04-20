@@ -10,6 +10,7 @@ requests = "*"
 bs4 = "*"
 googlemaps = "*"
 djangorestframework = "*"
+drf-yasg = "*"
 
 [dev-packages]
 
