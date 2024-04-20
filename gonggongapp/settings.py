@@ -55,7 +55,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "test.apps.TestConfig",
-    "auth.apps.AuthConfig",
+    "uuidauth.apps.UuidAuthConfig",
     "map.apps.MapConfig",
     "drf_yasg",
     "rest_framework",
@@ -138,7 +138,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # UUID 로그인 기능 구현체
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
-    "auth.backends.UuidBackend"
+    "uuidauth.backends.UuidBackend"
 ]
 
 REST_FRAMEWORK = {
