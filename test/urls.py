@@ -28,12 +28,22 @@ urlpatterns = [
     path(
         "SeoulMunicipalArtMuseumList/",
         SeoulMunicipalArtMuseumList.as_view(),
-        name="seoul_municipal_art_museum_list",
+        name="seoul_municipal_art_museum",
+    ),
+    path(
+        "SeoulMunicipalArtMuseumDetail<int:pk>/",
+        SeoulMunicipalArtMuseumDetail.as_view(),
+        name="seoul_municipal_art_museum_detail",
     ),
     path(
         "SeoulisArtMuseumList/",
         SeoulisArtMuseumList.as_view(),
         name="seoul_is_art_museum_list",
+    ),
+    path(
+        "SeoulisArtMuseumDetail<int:pk>/",
+        SeoulisArtMuseumDetail.as_view(),
+        name="seoul_is_art_museum_detail",
     ),
 ]
 if settings.DEBUG:

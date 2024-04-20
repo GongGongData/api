@@ -14,7 +14,7 @@ from .serializers import *
 from .models import *
 
 
-# 서울시립미술관 현황
+# 서울시립미술관 전시 정보 (국문)
 def GetSeoulMunicipalArtMuseum(request):
     api_key = SEOUL_API_KEY
     api_url = SeoulMunicipalArtMuseum.get_api_url(api_key, 1, 1000)
@@ -107,9 +107,21 @@ class SeoulMunicipalArtMuseumList(APIView):
     renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
 
     def get(self, request):
-        info_list = SeoulMunicipalArtMuseum.objects.all()[:10]
+        info_list = SeoulMunicipalArtMuseum.objects.all()
         serializer = SeoulMunicipalArtMuseumSerializer(info_list, many=True)
         return Response(serializer.data)
+
+
+class SeoulMunicipalArtMuseumDetail(APIView):
+    renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
+
+    def get(self, request, pk):
+        try:
+            detail_info = SeoulMunicipalArtMuseum.objects.get(id=pk)
+            serializer = SeoulMunicipalArtMuseumDetailSerializer(detail_info)
+            return Response(serializer.data)
+        except SeoulMunicipalArtMuseum.DoesNotExist:
+            return Response({"message": "Info does not found"}, status=404)
 
 
 class SeoulisArtMuseumList(APIView):
@@ -119,3 +131,15 @@ class SeoulisArtMuseumList(APIView):
         info_list = SeoulisArtMuseum.objects.all()
         serializer = SeoulisArtMuseumSerializer(info_list, many=True)
         return Response(serializer.data)
+
+
+class SeoulisArtMuseumDetail(APIView):
+    renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
+
+    def get(self, request, pk):
+        try:
+            detail_info = SeoulisArtMuseum.objects.get(id=pk)
+            serializer = SeoulisArtMuseumDetailSerializer(detail_info)
+            return Response(serializer.data)
+        except SeoulisArtMuseum.DoesNotExist:
+            return Response({"message": "Info does not found"}, status=404)
