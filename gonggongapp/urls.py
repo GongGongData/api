@@ -15,10 +15,38 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
 
 urlpatterns = [
+    ###############     ADMIN       #########################
     path("admin/", admin.site.urls),
+    #########################################################
     path("test/", include('test.urls')),
     path("auth/", include('uuidauth.urls')),
+]
+
+schema_view = get_schema_view(
+    openapi.Info(
+        title="GongGong Data API",
+        default_version="v1",
+        description="공공데이터를 프론트와 통신하기위한 API 문서",
+        terms_of_service="https://www.google.com/policies/terms/",
+        contact=openapi.Contact(name="nooreong", email="nooreong@gmail.com"),
+        license=openapi.License(name="Test License"),
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+    patterns=urlpatterns
+)
+
+urlpatterns += [
+    re_path('^swagger(?P<format>\.json|\.yaml)$',
+            schema_view.without_ui(cache_timeout=0),
+            name='schema-json'),
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0),
+         name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]

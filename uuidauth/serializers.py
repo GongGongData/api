@@ -1,9 +1,14 @@
-from rest_framework.serializers import ModelSerializer
+from rest_framework import serializers
 from django.contrib.auth.models import User
 
 
-class UuidUserSerializer(ModelSerializer):
+class UuidUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'last_login']
-        read_only_fields = ['last_login']
+
+
+class UuidLoginSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username']

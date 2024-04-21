@@ -1,32 +1,36 @@
 from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 from rest_framework.views import APIView
-from .serializers import UuidUserSerializer
+from .serializers import UuidUserSerializer, UuidLoginSerializer
 from django.contrib.auth.models import User
 from django.contrib.auth import *
 from rest_framework.response import Response
+from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+import json
 
 
 # Create your views here.
 class LoginView(APIView):
-    queryset = User.objects.all()
     serializer_class = UuidUserSerializer
 
+    @swagger_auto_schema(operation_summary="로그인 확인")
     def get(self, request, *args, **kwargs):
-        return Response({
-            'id': request.user.id,
-            'username': request.user.username,
-        })
+        seri = UuidUserSerializer(request.user)
+        return Response(seri.data)
 
+    @swagger_auto_schema(operation_summary="로그인 or 회원가입",
+                         request_body=UuidLoginSerializer,
+                         responses={201: UuidUserSerializer})
     def post(self, request, *args, **kwargs):
-        loginAttempt = request.POST["username"]
-
+        json_data = json.loads(request.body)
+        loginAttempt = json_data['username']
         user = authenticate(uuid=loginAttempt)
         login(request, user)
-        return Response({
-            "id": user.id,
-            "username": user.username,
-        })
 
+        return Response(UuidUserSerializer(user).data, 201)
+
+    @swagger_auto_schema(operation_summary="로그아웃")
     def delete(self, request, *args, **kwargs):
         userId = request.user.id
         username = request.user.username
