@@ -141,8 +141,8 @@ def landmark(request):
                     REF_ID=landmark.get("GA_KNAME").replace(" ", "_"),
                     ADDR=landmark.get("GA_ADDR1") + " " + landmark.get("GA_ADDR2"),
                     NAME=landmark.get("GA_KNAME"),
-                    X_COORD=coords[0],  # 예시 위도
-                    Y_COORD=coords[1],  # 예시 경도
+                    X_COORD=coords[0],
+                    Y_COORD=coords[1],
                     TYPE="서울은미술관",
                     startDate=None,
                     endDate=None,
@@ -167,15 +167,15 @@ def landmark(request):
                     y_coord_float = float(y_coord)
                 else:
                     coords = get_geocode(landmark.get("ADDR"))
-                    x_coord_float = coords[0]  # 임시 위도 -> geocode변환 필요
-                    y_coord_float = coords[1]  # 임시 경도 -> geocode변환 필요
+                    x_coord_float = coords[0]
+                    y_coord_float = coords[1]
 
                 LandMark.objects.create(
                     REF_ID=landmark.get("NUM"),
                     ADDR=landmark.get("ADDR"),
                     NAME=landmark.get("FAC_NAME"),
-                    X_COORD=x_coord_float,  # 예시 위도
-                    Y_COORD=y_coord_float,  # 예시 경도
+                    X_COORD=x_coord_float,
+                    Y_COORD=y_coord_float,
                     TYPE="문화공간",
                     startDate=None,
                     endDate=None,
@@ -206,18 +206,18 @@ def landmark(request):
                     if "°" in x_coord or x_coord == "" or "°" in y_coord or y_coord == "":
                         coords = get_geocode(landmark.get("ORG_NAME"))
 
-                        x_coord_float = coords[0]  # 임시 위도 -> geocode변환 필요
+                        x_coord_float = coords[0]
                         y_coord_float = coords[1]
                     else:
-                        x_coord_float = float(x_coord)  # 임시 위도 -> geocode변환 필요
-                        y_coord_float = float(y_coord)  # 임시 경도 -> geocode변환 필요
+                        x_coord_float = float(x_coord)
+                        y_coord_float = float(y_coord)
 
                     LandMark.objects.create(
                         REF_ID=ref_id,
                         ADDR=landmark.get("GUNAME") + " " + landmark.get("PLACE"),
                         NAME=landmark.get("TITLE"),
-                        X_COORD=x_coord_float,  # 예시 위도
-                        Y_COORD=y_coord_float,  # 예시 경도
+                        X_COORD=x_coord_float,
+                        Y_COORD=y_coord_float,
                         TYPE="문화행사",
                         startDate=landmark.get("STARTDATE"),
                         endDate=landmark.get("END_DATE"),
