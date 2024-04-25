@@ -1,6 +1,6 @@
 import googlemaps, requests
 from django.shortcuts import render
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from gonggongapp.settings import SEOUL_API_KEY, GOOGLE_API_KEY
 from bs4 import BeautifulSoup
 from datetime import datetime
@@ -52,6 +52,18 @@ def geocode_test(request):
     first = SeoulMunicipalArtMuseum.objects.first()
     geocode_result = gmaps.geocode(first.DP_PLACE, region="kr", language="ko")
     return JsonResponse({"place": first.DP_PLACE, "result": geocode_result}, status=200)
+
+
+def get_geocode(address):
+    gmaps = googlemaps.Client(key=GOOGLE_API_KEY)
+    geocode_result = gmaps.geocode(address, region="kr", language="ko")
+    if geocode_result and len(geocode_result) > 0:
+        location = geocode_result[0].get("geometry", {}).get("location", {})
+        if location:
+            lat = location.get("lat")
+            lng = location.get("lng")
+            return lat, lng
+    return None, None
 
 
 # 서울은 미술관 현황
@@ -124,12 +136,13 @@ def landmark(request):
         for landmark in landmarks:
             # 중복 데이터 확인
             if not LandMark.objects.filter(NAME=landmark.get("GA_KNAME", "")).exists():
+                coords = get_geocode(landmark.get("GA_ADDR1"))
                 LandMark.objects.create(
                     REF_ID=landmark.get("GA_KNAME").replace(" ", "_"),
                     ADDR=landmark.get("GA_ADDR1") + " " + landmark.get("GA_ADDR2"),
                     NAME=landmark.get("GA_KNAME"),
-                    X_COORD=40.7128,  # 예시 위도
-                    Y_COORD=-74.0060,  # 예시 경도
+                    X_COORD=coords[0],  # 예시 위도
+                    Y_COORD=coords[1],  # 예시 경도
                     TYPE="서울은미술관",
                     startDate=None,
                     endDate=None,
@@ -149,14 +162,13 @@ def landmark(request):
             if not LandMark.objects.filter(REF_ID=landmark.get("NUM", "")).exists():
                 x_coord = landmark.get("X_COORD")
                 y_coord = landmark.get("Y_COORD")
-                if x_coord:
+                if x_coord and y_coord:
                     x_coord_float = float(x_coord)
-                else:
-                    x_coord_float = 12.23312  # 임시 위도 -> geocode변환 필요
-                if y_coord:
                     y_coord_float = float(y_coord)
                 else:
-                    y_coord_float = 12.23312  # 임시 경도 -> geocode변환 필요
+                    coords = get_geocode(landmark.get("ADDR"))
+                    x_coord_float = coords[0]  # 임시 위도 -> geocode변환 필요
+                    y_coord_float = coords[1]  # 임시 경도 -> geocode변환 필요
 
                 LandMark.objects.create(
                     REF_ID=landmark.get("NUM"),
@@ -191,13 +203,13 @@ def landmark(request):
                     x_coord = landmark.get("LOT")
                     y_coord = landmark.get("LAT")
 
-                    if "°" in x_coord or x_coord == "":
-                        x_coord_float = 12.23312  # 임시 위도 -> geocode변환 필요
+                    if "°" in x_coord or x_coord == "" or "°" in y_coord or y_coord == "":
+                        coords = get_geocode(landmark.get("ORG_NAME"))
+
+                        x_coord_float = coords[0]  # 임시 위도 -> geocode변환 필요
+                        y_coord_float = coords[1]
                     else:
                         x_coord_float = float(x_coord)  # 임시 위도 -> geocode변환 필요
-                    if "°" in y_coord or y_coord == "":
-                        y_coord_float = 12.23312
-                    else:
                         y_coord_float = float(y_coord)  # 임시 경도 -> geocode변환 필요
 
                     LandMark.objects.create(
