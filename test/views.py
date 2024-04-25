@@ -27,9 +27,7 @@ def GetSeoulMunicipalArtMuseum(request):
         exhibitions = data.get("ListExhibitionOfSeoulMOAInfo", {}).get("row", [])
         for exhibition_data in exhibitions:
             # 중복 데이터 확인
-            if not SeoulMunicipalArtMuseum.objects.filter(
-                DP_EX_NO=exhibition_data.get("DP_EX_NO", "")
-            ).exists():
+            if not SeoulMunicipalArtMuseum.objects.filter(DP_EX_NO=exhibition_data.get("DP_EX_NO", "")).exists():
                 # HTML 태그를 제거하여 텍스트 정리
                 dp_info = exhibition_data.get("DP_INFO", "")
                 soup = BeautifulSoup(dp_info, "html.parser")
@@ -66,9 +64,7 @@ def test2(request):
         exhibitions = data.get("tvGonggongArt", {}).get("row", [])
         for exhibition_data in exhibitions:
             # 중복 데이터 확인
-            if not SeoulisArtMuseum.objects.filter(
-                GA_KNAME=exhibition_data.get("GA_KNAME", "")
-            ).exists():
+            if not SeoulisArtMuseum.objects.filter(GA_KNAME=exhibition_data.get("GA_KNAME", "")).exists():
                 exhibition = SeoulisArtMuseum.of(exhibition_data)
                 exhibition.save()
         return JsonResponse({"message": "SeoulisArtMuseum data saved successfully."})
@@ -77,10 +73,11 @@ def test2(request):
         return JsonResponse({"error_message": error_message}, status=500)
 
 
-# 서울시립미술관 교육 정보 (교육 프로그램, 교육 기간 대략 1 달 정도)
+# 서울은미술관 Detail API
 def test3(request):
     api_key = SEOUL_API_KEY
-    api_url = f"http://openapi.seoul.go.kr:8088/{api_key}/json/ListEducationOfSeoulMOAInfo/1/5/"
+    api_url = f"http://openapi.seoul.go.kr:8088/{api_key}/json/culturalEventInfo/1/5/%20/오페라 갈라"
+
     response = requests.get(api_url)
 
     if response.status_code == 200:
@@ -100,6 +97,37 @@ def test4(request):
         return JsonResponse(response.json())
     else:
         error_message = f"Failed to fetch data. Status code: {response.status_code}"
+        return JsonResponse({"error_message": error_message}, status=500)
+
+
+def landmark(request):
+    api_key = SEOUL_API_KEY
+    # 서울은미술관
+    museum_api_url = f"http://openapi.seoul.go.kr:8088/{api_key}/json/tvGonggongArt/1/30/"
+    museum_response = requests.get(museum_api_url)
+
+    if museum_response.status_code == 200:
+        data = museum_response.json()
+
+        # 데이터를 모델에 저장
+        landmarks = data.get("tvGonggongArt", {}).get("row", [])
+        for landmark in landmarks:
+            # 중복 데이터 확인
+            if not LandMark.objects.filter(NAME=landmark.get("GA_KNAME", "")).exists():
+                LandMark.objects.create(
+                    REF_ID=landmark.get("GA_KNAME").replace(" ", "_"),
+                    ADDR=landmark.get("GA_ADDR1") + " " + landmark.get("GA_ADDR2"),
+                    NAME=landmark.get("GA_KNAME"),
+                    X_COORD=40.7128,  # 예시 위도
+                    Y_COORD=-74.0060,  # 예시 경도
+                    TYPE="서울은미술관",
+                    startDate=None,
+                    endDate=None,
+                )
+
+        return JsonResponse({"message": "Landmarks saved successfully."})
+    else:
+        error_message = f"Failed to fetch data. Status code: {museum_response.status_code}"
         return JsonResponse({"error_message": error_message}, status=500)
 
 

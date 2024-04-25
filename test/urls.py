@@ -9,6 +9,7 @@ urlpatterns = [
     path("test2", views.test2),
     path("test3", views.test3),
     path("test4", views.test4),
+    path("landmark", views.landmark),
     path("geocode", views.geocode_test),
     path(
         "SeoulMunicipalArtMuseumList/",
