@@ -26,9 +26,7 @@ class SeoulMunicipalArtMuseum(models.Model):
 
     @staticmethod
     def get_api_url(api_key: str, start_index=1, end_index=20):
-        return (
-            f"http://openapi.seoul.go.kr:8088/{api_key}/json/ListExhibitionOfSeoulMOAInfo/{start_index}/{end_index}/"
-        )
+        return f"http://openapi.seoul.go.kr:8088/{api_key}/json/ListExhibitionOfSeoulMOAInfo/{start_index}/{end_index}/"
 
     @staticmethod
     def of(json_data, clean_text):
@@ -99,8 +97,8 @@ class LandMark(models.Model):
     X_COORD = models.FloatField(default=0.0)
     Y_COORD = models.FloatField(default=0.0)
     TYPE = models.CharField(max_length=300)
-    startDate = models.DateField(blank=True, null=True)
-    endDate = models.DateField(blank=True, null=True)
+    startDate = models.CharField(max_length=500, null=True)
+    endDate = models.CharField(max_length=500, null=True)
 
     def __str__(self):
         return self.NAME
