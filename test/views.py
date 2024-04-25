@@ -105,29 +105,59 @@ def landmark(request):
     # 서울은미술관
     museum_api_url = f"http://openapi.seoul.go.kr:8088/{api_key}/json/tvGonggongArt/1/30/"
     museum_response = requests.get(museum_api_url)
+    culture_place_api_url = f"http://openapi.seoul.go.kr:8088/{api_key}/json/culturalSpaceInfo/1/1000/"
+    culture_place_response = requests.get(culture_place_api_url)
 
-    if museum_response.status_code == 200:
-        data = museum_response.json()
+    if museum_response.status_code == 200 and culture_place_response.status_code == 200:
+        if museum_response.status_code == 200:
+            data = museum_response.json()
+            # 데이터를 모델에 저장
+            landmarks = data.get("tvGonggongArt", {}).get("row", [])
+            for landmark in landmarks:
+                # 중복 데이터 확인
+                if not LandMark.objects.filter(NAME=landmark.get("GA_KNAME", "")).exists():
+                    LandMark.objects.create(
+                        REF_ID=landmark.get("GA_KNAME").replace(" ", "_"),
+                        ADDR=landmark.get("GA_ADDR1") + " " + landmark.get("GA_ADDR2"),
+                        NAME=landmark.get("GA_KNAME"),
+                        X_COORD=40.7128,  # 예시 위도
+                        Y_COORD=-74.0060,  # 예시 경도
+                        TYPE="서울은미술관",
+                        startDate=None,
+                        endDate=None,
+                    )
 
-        # 데이터를 모델에 저장
-        landmarks = data.get("tvGonggongArt", {}).get("row", [])
-        for landmark in landmarks:
-            # 중복 데이터 확인
-            if not LandMark.objects.filter(NAME=landmark.get("GA_KNAME", "")).exists():
-                LandMark.objects.create(
-                    REF_ID=landmark.get("GA_KNAME").replace(" ", "_"),
-                    ADDR=landmark.get("GA_ADDR1") + " " + landmark.get("GA_ADDR2"),
-                    NAME=landmark.get("GA_KNAME"),
-                    X_COORD=40.7128,  # 예시 위도
-                    Y_COORD=-74.0060,  # 예시 경도
-                    TYPE="서울은미술관",
-                    startDate=None,
-                    endDate=None,
-                )
+        if culture_place_response.status_code == 200:
+            data = culture_place_response.json()
+            # 데이터를 모델에 저장
+            landmarks = data.get("culturalSpaceInfo", {}).get("row", [])
+            for landmark in landmarks:
+                # 중복 데이터 확인
+                if not LandMark.objects.filter(REF_ID=landmark.get("NUM", "")).exists():
+                    x_coord = landmark.get("X_COORD")
+                    y_coord = landmark.get("Y_COORD")
+                    if x_coord:
+                        x_coord_float = float(x_coord)
+                    else:
+                        x_coord_float = 12.23312  # 임시 위도 -> geocode변환 필요
+                    if y_coord:
+                        y_coord_float = float(y_coord)
+                    else:
+                        y_coord_float = 12.23312  # 임시 경도 -> geocode변환 필요
 
+                    LandMark.objects.create(
+                        REF_ID=landmark.get("NUM"),
+                        ADDR=landmark.get("ADDR"),
+                        NAME=landmark.get("FAC_NAME"),
+                        X_COORD=x_coord_float,  # 예시 위도
+                        Y_COORD=y_coord_float,  # 예시 경도
+                        TYPE="문화공간",
+                        startDate=None,
+                        endDate=None,
+                    )
         return JsonResponse({"message": "Landmarks saved successfully."})
     else:
-        error_message = f"Failed to fetch data. Status code: {museum_response.status_code}"
+        error_message = f"Failed to fetch data."
         return JsonResponse({"error_message": error_message}, status=500)
 
 
