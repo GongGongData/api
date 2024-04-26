@@ -22,6 +22,11 @@ urlpatterns = [
         name="LandMarkAtPos",
     ),
     path(
+        "LandMarkDetail/",
+        LandMarkDetail.as_view(),
+        name="LandMarkDetail",
+    ),
+    path(
         "SeoulMunicipalArtMuseumList/",
         SeoulMunicipalArtMuseumList.as_view(),
         name="seoul_municipal_art_museum",

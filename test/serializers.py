@@ -38,4 +38,5 @@ class SeoulisArtMuseumDetailSerializer(serializers.ModelSerializer):
 class LandMarkListSerializer(serializers.ModelSerializer):
     class Meta:
         model = LandMark
-        fields = "__all__"
+        # fields = "__all__"
+        exclude = ["startDate", "endDate"]

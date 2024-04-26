@@ -293,6 +293,30 @@ class LandMarkAtPos(APIView):
         return Response(serializer.data)
 
 
+class LandMarkDetail(APIView):
+    @swagger_auto_schema(
+        operation_summary="Detail 데이터 로드",
+        manual_parameters=[
+            openapi.Parameter("REF_ID", openapi.IN_QUERY, description="REF_ID", type=openapi.TYPE_STRING),
+            openapi.Parameter("TYPE", openapi.IN_QUERY, description="TYPE", type=openapi.TYPE_STRING),
+        ],
+    )
+    def get(self, request):
+        ref_id = request.query_params.get("REF_ID", None)
+        type = request.query_params.get("TYPE", None)
+        print(ref_id, type)
+        api_key = SEOUL_API_KEY
+
+        if ref_id is None or type is None:
+            # ref_id type 주어지지 않은 경우 에러 응답 반환
+            return Response({"error": "ref_id and type parameters are required"}, status=400)
+        if ref_id and type == "서울은미술관":
+            museum_api_url = f"http://openapi.seoul.go.kr:8088/{api_key}/json/tvGonggongArt/1/1/{ref_id}"
+            museum_response = requests.get(museum_api_url)
+            if museum_response.status_code == 200:
+                return Response(museum_response.json())
+
+
 class SeoulMunicipalArtMuseumList(APIView):
     renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
 
