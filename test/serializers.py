@@ -38,4 +38,4 @@ class SeoulisArtMuseumDetailSerializer(serializers.ModelSerializer):
 class LandMarkListSerializer(serializers.ModelSerializer):
     class Meta:
         model = LandMark
-        fields = ["REF_ID", "X_COORD", "Y_COORD", "ADDR", "TYPE"]
+        fields = ["REF_ID", "X_COORD", "Y_COORD", "ADDR", "NAME", "TYPE"]

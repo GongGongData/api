@@ -97,6 +97,9 @@ class LandMark(models.Model):
     X_COORD = models.FloatField(default=0.0, null=True)
     Y_COORD = models.FloatField(default=0.0, null=True)
     TYPE = models.CharField(max_length=300)
+    TITLE = models.CharField(max_length=300, default="")
+    IMG = models.URLField(default="")
+    SUBJECT = models.CharField(max_length=300, default="")
     startDate = models.CharField(max_length=500, null=True)
     endDate = models.CharField(max_length=500, null=True)
 

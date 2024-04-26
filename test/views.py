@@ -92,7 +92,7 @@ def test2(request):
 # 서울은미술관 Detail API
 def test3(request):
     api_key = SEOUL_API_KEY
-    api_url = f"http://openapi.seoul.go.kr:8088/{api_key}/json/culturalEventInfo/1/5/%20/오페라 갈라"
+    api_url = f"http://openapi.seoul.go.kr:8088/{api_key}/json/culturalEventInfo/1/5/"
 
     response = requests.get(api_url)
 
@@ -147,6 +147,9 @@ def landmark(request):
                     X_COORD=coords[0],
                     Y_COORD=coords[1],
                     TYPE="서울은미술관",
+                    TITLE=landmark.get("GA_ADDR2", ""),
+                    IMG="",
+                    SUBJECT="미술품",
                     startDate=None,
                     endDate=None,
                 )
@@ -180,6 +183,9 @@ def landmark(request):
                     X_COORD=x_coord_float,
                     Y_COORD=y_coord_float,
                     TYPE="문화공간",
+                    TITLE=landmark.get("FAC_NAME", ""),
+                    IMG=landmark.get("MAIN_IMG", ""),
+                    SUBJECT=landmark.get("SUBJCODE", ""),
                     startDate=None,
                     endDate=None,
                 )
@@ -217,12 +223,15 @@ def landmark(request):
 
                     LandMark.objects.create(
                         REF_ID=ref_id,
-                        ADDR=landmark.get("GUNAME") + " " + landmark.get("PLACE"),
+                        ADDR=landmark.get("GUNAME", "") + " " + landmark.get("PLACE", ""),
                         NAME=landmark.get("TITLE"),
                         X_COORD=x_coord_float,
                         Y_COORD=y_coord_float,
                         TYPE="문화행사",
-                        startDate=landmark.get("STARTDATE"),
+                        TITLE=landmark.get("PLACE", ""),
+                        IMG=landmark.get("MAIN_IMG", ""),
+                        SUBJECT=landmark.get("CODENAME", ""),
+                        startDate=landmark.get("STRTDATE"),
                         endDate=landmark.get("END_DATE"),
                     )
         else:
