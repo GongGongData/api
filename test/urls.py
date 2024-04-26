@@ -12,6 +12,16 @@ urlpatterns = [
     path("landmark", views.landmark),
     path("geocode", views.geocode_test),
     path(
+        "LandMarkList/",
+        LandMarkList.as_view(),
+        name="LandMarkList",
+    ),
+    path(
+        "LandMarkAtPos/",
+        LandMarkAtPos.as_view(),
+        name="LandMarkAtPos",
+    ),
+    path(
         "SeoulMunicipalArtMuseumList/",
         SeoulMunicipalArtMuseumList.as_view(),
         name="seoul_municipal_art_museum",

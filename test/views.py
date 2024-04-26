@@ -8,6 +8,9 @@ from datetime import datetime
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
+from rest_framework.schemas import ManualSchema
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 # Create your views here.
 
@@ -229,6 +232,56 @@ def landmark(request):
 
     if all_success:
         return JsonResponse({"message": "All data saved successfully."})
+
+
+class LandMarkList(APIView):
+
+    @swagger_auto_schema(
+        operation_summary="전체 랜드마크 위도 경도 반환(중복제거 수행)",
+    )
+    def get(self, requets):
+        # 데이터베이스로부터 중복을 제거한 좌표 쌍 가져오기
+        unique_coordinates = LandMark.objects.values_list("X_COORD", "Y_COORD").distinct()
+
+        # 중복을 제거한 객체들을 담을 리스트 생성
+        unique_landmarks = []
+
+        # 중복을 제거한 좌표 쌍을 기반으로 객체들 가져오기
+        for x_coord, y_coord in unique_coordinates:
+            landmark = LandMark.objects.filter(X_COORD=x_coord, Y_COORD=y_coord).first()
+            if landmark:
+                unique_landmarks.append(landmark)
+
+        # Serializer를 사용하여 객체들을 직렬화
+        serializer = LandMarkListSerializer(unique_landmarks, many=True)
+        return Response(serializer.data)
+
+
+class LandMarkAtPos(APIView):
+    @swagger_auto_schema(
+        operation_summary="위도 경도 기반으로 데이터 로드",
+        manual_parameters=[
+            openapi.Parameter("X_COORD", openapi.IN_QUERY, description="X coordinate", type=openapi.TYPE_NUMBER),
+            openapi.Parameter("Y_COORD", openapi.IN_QUERY, description="Y coordinate", type=openapi.TYPE_NUMBER),
+        ],
+    )
+    def get(self, request):
+        # 요청으로부터 X_COORD와 Y_COORD 값을 가져오기
+        x_coord = request.query_params.get("X_COORD", None)
+        y_coord = request.query_params.get("Y_COORD", None)
+
+        if x_coord is None or y_coord is None:
+            # X_COORD나 Y_COORD가 주어지지 않은 경우 에러 응답 반환
+            return Response({"error": "X_COORD and Y_COORD parameters are required"}, status=400)
+
+        # 데이터베이스에서 해당하는 좌표에 해당하는 객체들을 가져오기
+        landmarks = LandMark.objects.filter(X_COORD=x_coord, Y_COORD=y_coord)
+
+        # Serializer를 사용하여 객체들을 직렬화
+        serializer = LandMarkListSerializer(landmarks, many=True)
+
+        # 직렬화된 데이터 반환
+        return Response(serializer.data)
 
 
 class SeoulMunicipalArtMuseumList(APIView):
