@@ -1,6 +1,10 @@
+import json
+
 import googlemaps, requests
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+
 from gonggongapp.settings import SEOUL_API_KEY, GOOGLE_API_KEY
 from bs4 import BeautifulSoup
 from datetime import datetime
@@ -357,3 +361,44 @@ class SeoulisArtMuseumDetail(APIView):
             return Response(serializer.data)
         except SeoulisArtMuseum.DoesNotExist:
             return Response({"message": "Info does not found"}, status=404)
+
+
+class LandMarkFavoriteList(APIView):
+    renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
+
+    def get(self, request):
+        favorites = LandmarkFavorite.objects.filter(
+            USER_id=request.user.id).select_related("LANDMARK")
+        serializer = LandMarkFavoriteListSerializer(favorites, many=True)
+        return Response({
+            "message": "Favorites List for user",
+            "favorites": serializer.data
+        })
+
+    ## blog에 엔트리가 여러개, 랜드마크에 즐찾이 여러개
+
+    @csrf_exempt
+    @swagger_auto_schema(operation_summary="즐겨찾기 등록",
+                         request_body=LandMarkFavoritePostSerializer,
+                         responses={201: LandMarkFavoriteListSerializer})
+    def post(self, request):
+        lm_id = request.data["LANDMARK"]
+
+        # 중복제거
+        (LandmarkFavorite.objects
+         .all()
+         .filter(LANDMARK_id=lm_id, USER_id=request.user.id)
+         .delete()
+         )
+
+        # 생성
+        landmark_favorite = LandmarkFavorite.objects.create(
+            LANDMARK=LandMark.objects.get(pk=lm_id),
+            USER=User(pk=request.user.id),
+        )
+
+        favorites = LandMarkFavoriteListSerializer(landmark_favorite, many=False).data
+        return Response({
+            "message": "Favorites List for user",
+            "favorites": favorites
+        })

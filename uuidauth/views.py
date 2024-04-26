@@ -1,3 +1,4 @@
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 from rest_framework.views import APIView
 from .serializers import UuidUserSerializer, UuidLoginSerializer
@@ -19,12 +20,15 @@ class LoginView(APIView):
         seri = UuidUserSerializer(request.user)
         return Response(seri.data)
 
+    @csrf_exempt
     @swagger_auto_schema(operation_summary="로그인 or 회원가입",
                          request_body=UuidLoginSerializer,
                          responses={201: UuidUserSerializer})
     def post(self, request, *args, **kwargs):
-        json_data = json.loads(request.body)
-        loginAttempt = json_data['username']
+        if (request.user.is_authenticated):
+            return Response(UuidUserSerializer(request.user).data)
+
+        loginAttempt = request.data['username']
         user = authenticate(uuid=loginAttempt)
         login(request, user)
 
