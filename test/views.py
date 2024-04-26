@@ -92,7 +92,7 @@ def test2(request):
 # 서울은미술관 Detail API
 def test3(request):
     api_key = SEOUL_API_KEY
-    api_url = f"http://openapi.seoul.go.kr:8088/{api_key}/json/culturalEventInfo/1/5/"
+    api_url = f"http://openapi.seoul.go.kr:8088/{api_key}/json/culturalEventInfo/1/5/%20/창작뮤지컬/2023"
 
     response = requests.get(api_url)
 
@@ -114,6 +114,74 @@ def test4(request):
     else:
         error_message = f"Failed to fetch data. Status code: {response.status_code}"
         return JsonResponse({"error_message": error_message}, status=500)
+
+
+def cultureEvent(request):
+    all_success = True
+    api_key = SEOUL_API_KEY
+    culture_event_api_url_base = f"http://openapi.seoul.go.kr:8088/{api_key}/json/culturalEventInfo/"
+
+    event_page_size = 1000
+    event_total_pages = 5
+
+    for page in range(1, event_total_pages + 1):
+        start_index = (page - 1) * event_page_size + 1
+        end_index = page * event_page_size
+        culture_event_api_url = culture_event_api_url_base + f"{start_index}/{end_index}/"
+        culture_event_response = requests.get(culture_event_api_url)
+
+        if culture_event_response.status_code == 200:
+            data = culture_event_response.json()
+            # 데이터를 모델에 저장
+            landmarks = data.get("culturalEventInfo", {}).get("row", [])
+            for landmark in landmarks:
+                # 중복 데이터 확인
+                ref_id = f"%20/{landmark.get('TITLE')}/{landmark.get('STARTDATE')}"
+                if not CultureEvent.objects.filter(REF_ID=ref_id).exists():
+                    x_coord = landmark.get("LOT")
+                    y_coord = landmark.get("LAT")
+
+                    if "°" in x_coord or x_coord == "" or "°" in y_coord or y_coord == "":
+                        coords = get_geocode(landmark.get("ORG_NAME"))
+
+                        x_coord_float = coords[0]
+                        y_coord_float = coords[1]
+                    else:
+                        x_coord_float = float(x_coord)
+                        y_coord_float = float(y_coord)
+
+                    CultureEvent.objects.create(
+                        REF_ID=ref_id,
+                        CODENAME=landmark.get("CODENAME", ""),
+                        GUNAME=landmark.get("GUNAME", ""),
+                        TITLE=landmark.get("TITLE", ""),
+                        DATE=landmark.get("DATE", ""),
+                        PLACE=landmark.get("PLACE", ""),
+                        ORG_NAME=landmark.get("ORG_NAME", ""),
+                        USE_TRGT=landmark.get("USE_TRGT", ""),
+                        USE_FEE=landmark.get("USE_FEE", ""),
+                        PLAYER=landmark.get("PLAYER", ""),
+                        PROGRAM=landmark.get("PROGRAM", ""),
+                        ETC_DESC=landmark.get("ETC_DESC", ""),
+                        ORG_LINK=landmark.get("ORG_LINK", ""),
+                        MAIN_IMG=landmark.get("MAIN_IMG", ""),
+                        RGSTDATE=landmark.get("RGSTDATE", ""),
+                        TICKET=landmark.get("TICKET", ""),
+                        STRTDATE=landmark.get("STRTDATE", ""),
+                        END_DATE=landmark.get("END_DATE", ""),
+                        THEMECODE=landmark.get("THEMECODE", ""),
+                        LOT=x_coord_float,
+                        LAT=y_coord_float,
+                        IS_FREE=landmark.get("IS_FREE", ""),
+                        HMPG_ADDR=landmark.get("HMPG_ADDR", ""),
+                    )
+                pass
+        else:
+            all_success = False
+            error_message = f"Failed to fetch culture event data."
+            return JsonResponse({"error_message": error_message}, status=500)
+    if all_success:
+        return JsonResponse({"message": "All data saved successfully."})
 
 
 def landmark(request):
@@ -244,7 +312,6 @@ def landmark(request):
 
 
 class LandMarkList(APIView):
-
     @swagger_auto_schema(
         operation_summary="전체 랜드마크 위도 경도 반환(중복제거 수행)",
     )
@@ -304,17 +371,34 @@ class LandMarkDetail(APIView):
     def get(self, request):
         ref_id = request.query_params.get("REF_ID", None)
         type = request.query_params.get("TYPE", None)
-        print(ref_id, type)
+
         api_key = SEOUL_API_KEY
 
         if ref_id is None or type is None:
             # ref_id type 주어지지 않은 경우 에러 응답 반환
             return Response({"error": "ref_id and type parameters are required"}, status=400)
+        # 서울은미술관
         if ref_id and type == "서울은미술관":
             museum_api_url = f"http://openapi.seoul.go.kr:8088/{api_key}/json/tvGonggongArt/1/1/{ref_id}"
             museum_response = requests.get(museum_api_url)
             if museum_response.status_code == 200:
-                return Response(museum_response.json())
+                museum_data = museum_response.json()["tvGonggongArt"]["row"][0]
+                return Response(museum_data)
+        # 문화공간
+        if ref_id and type == "문화공간":
+            culture_place_api_url = f"http://openapi.seoul.go.kr:8088/{api_key}/json/culturalSpaceInfo/1/1/{ref_id}"
+            culture_place_response = requests.get(culture_place_api_url)
+            if culture_place_response.status_code == 200:
+                culture_space_data = culture_place_response.json()["culturalSpaceInfo"]["row"][0]
+                return Response(culture_space_data)
+        # 문화행사
+        # if ref_id and type == "문화행사":
+        #     culture_event_api_url = f"http://openapi.seoul.go.kr:8088/{api_key}/json/culturalEventInfo/1/1/{ref_id}"
+        #     print(culture_event_api_url)
+        #     culture_event_aresponse = requests.get(culture_event_api_url)
+        #     if culture_event_aresponse.status_code == 200:
+        #         culture_event_data = culture_event_aresponse.json()["culturalEventInfo"]["row"][0]
+        #         return Response(culture_event_data)
 
 
 class SeoulMunicipalArtMuseumList(APIView):

@@ -105,3 +105,32 @@ class LandMark(models.Model):
 
     def __str__(self):
         return self.NAME
+
+
+class CultureEvent(models.Model):
+    REF_ID = models.CharField(max_length=300, default="")
+    CODENAME = models.CharField(max_length=300)
+    GUNAME = models.CharField(max_length=300)
+    TITLE = models.CharField(max_length=300)
+    DATE = models.CharField(max_length=300)
+    PLACE = models.CharField(max_length=300)
+    ORG_NAME = models.CharField(max_length=300)
+    USE_TRGT = models.CharField(max_length=300)
+    USE_FEE = models.TextField()
+    PLAYER = models.TextField()
+    PROGRAM = models.TextField()
+    ETC_DESC = models.TextField()
+    ORG_LINK = models.CharField(max_length=1500, default="")
+    MAIN_IMG = models.URLField(default="")
+    RGSTDATE = models.CharField(max_length=300)
+    TICKET = models.CharField(max_length=300)
+    STRTDATE = models.CharField(max_length=300)
+    END_DATE = models.CharField(max_length=300)
+    THEMECODE = models.CharField(max_length=300)
+    LOT = models.FloatField(default=0.0, null=True)
+    LAT = models.FloatField(default=0.0, null=True)
+    IS_FREE = models.CharField(max_length=300)
+    HMPG_ADDR = models.URLField(default="")
+
+    def __str__(self):
+        return self.TITLE

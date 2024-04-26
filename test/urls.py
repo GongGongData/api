@@ -11,6 +11,7 @@ urlpatterns = [
     path("test4", views.test4),
     path("landmark", views.landmark),
     path("geocode", views.geocode_test),
+    path("cultureEvent", views.cultureEvent),
     path(
         "LandMarkList/",
         LandMarkList.as_view(),
