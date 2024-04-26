@@ -140,7 +140,7 @@ def cultureEvent(request):
             landmarks = data.get("culturalEventInfo", {}).get("row", [])
             for landmark in landmarks:
                 # 중복 데이터 확인
-                ref_id = f"%20/{landmark.get('TITLE')}/{landmark.get('STARTDATE')}"
+                ref_id = landmark.get("TITLE")
                 if not CultureEvent.objects.filter(REF_ID=ref_id).exists():
                     x_coord = landmark.get("LOT")
                     y_coord = landmark.get("LAT")
@@ -279,7 +279,7 @@ def landmark(request):
             landmarks = data.get("culturalEventInfo", {}).get("row", [])
             for landmark in landmarks:
                 # 중복 데이터 확인
-                ref_id = f"%20/{landmark.get('TITLE')}/{landmark.get('STARTDATE')}"
+                ref_id = landmark.get("TITLE")
                 if not LandMark.objects.filter(REF_ID=ref_id).exists():
                     x_coord = landmark.get("LOT")
                     y_coord = landmark.get("LAT")
