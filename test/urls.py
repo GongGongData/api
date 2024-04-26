@@ -13,6 +13,11 @@ urlpatterns = [
     path("geocode", views.geocode_test),
     path("cultureEvent", views.cultureEvent),
     path(
+        "favorite",
+        LandMarkFavoriteList.as_view(),
+        name="LandMarkFavoriteList",
+    ),
+    path(
         "LandMarkList/",
         LandMarkList.as_view(),
         name="LandMarkList",

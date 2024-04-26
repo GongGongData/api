@@ -40,3 +40,18 @@ class LandMarkListSerializer(serializers.ModelSerializer):
         model = LandMark
         # fields = "__all__"
         exclude = ["startDate", "endDate"]
+
+
+class LandMarkFavoriteListSerializer(serializers.ModelSerializer):
+    LANDMARK = LandMarkListSerializer(many=False, read_only=True)
+    USER = serializers.PrimaryKeyRelatedField(many=False, read_only=True)
+
+    class Meta:
+        model = LandmarkFavorite
+        fields = ["LANDMARK", "USER", "CREATED_AT"]
+
+
+class LandMarkFavoritePostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LandmarkFavorite
+        fields = ["LANDMARK"]
