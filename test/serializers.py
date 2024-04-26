@@ -55,3 +55,9 @@ class LandMarkFavoritePostSerializer(serializers.ModelSerializer):
     class Meta:
         model = LandmarkFavorite
         fields = ["LANDMARK"]
+
+
+class CultureEventDetail(serializers.ModelSerializer):
+    class Meta:
+        model = CultureEvent
+        fields = "__all__"

@@ -396,13 +396,10 @@ class LandMarkDetail(APIView):
                 culture_space_data = culture_place_response.json()["culturalSpaceInfo"]["row"][0]
                 return Response(culture_space_data)
         # 문화행사
-        # if ref_id and type == "문화행사":
-        #     culture_event_api_url = f"http://openapi.seoul.go.kr:8088/{api_key}/json/culturalEventInfo/1/1/{ref_id}"
-        #     print(culture_event_api_url)
-        #     culture_event_aresponse = requests.get(culture_event_api_url)
-        #     if culture_event_aresponse.status_code == 200:
-        #         culture_event_data = culture_event_aresponse.json()["culturalEventInfo"]["row"][0]
-        #         return Response(culture_event_data)
+        if ref_id and type == "문화행사":
+            data = CultureEvent.objects.get(REF_ID=ref_id)
+            serializer = CultureEventDetail(data)
+            return Response(serializer.data)
 
 
 class SeoulMunicipalArtMuseumList(APIView):
@@ -451,29 +448,23 @@ class LandMarkFavoriteList(APIView):
     renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
 
     def get(self, request):
-        favorites = LandmarkFavorite.objects.filter(
-            USER_id=request.user.id).select_related("LANDMARK")
+        favorites = LandmarkFavorite.objects.filter(USER_id=request.user.id).select_related("LANDMARK")
         serializer = LandMarkFavoriteListSerializer(favorites, many=True)
-        return Response({
-            "message": "Favorites List for user",
-            "favorites": serializer.data
-        })
+        return Response({"message": "Favorites List for user", "favorites": serializer.data})
 
     ## blog에 엔트리가 여러개, 랜드마크에 즐찾이 여러개
 
     @csrf_exempt
-    @swagger_auto_schema(operation_summary="즐겨찾기 등록",
-                         request_body=LandMarkFavoritePostSerializer,
-                         responses={201: LandMarkFavoriteListSerializer})
+    @swagger_auto_schema(
+        operation_summary="즐겨찾기 등록",
+        request_body=LandMarkFavoritePostSerializer,
+        responses={201: LandMarkFavoriteListSerializer},
+    )
     def post(self, request):
         lm_id = request.data["LANDMARK"]
 
         # 중복제거
-        (LandmarkFavorite.objects
-         .all()
-         .filter(LANDMARK_id=lm_id, USER_id=request.user.id)
-         .delete()
-         )
+        (LandmarkFavorite.objects.all().filter(LANDMARK_id=lm_id, USER_id=request.user.id).delete())
 
         # 생성
         landmark_favorite = LandmarkFavorite.objects.create(
@@ -482,7 +473,4 @@ class LandMarkFavoriteList(APIView):
         )
 
         favorites = LandMarkFavoriteListSerializer(landmark_favorite, many=False).data
-        return Response({
-            "message": "Favorites List for user",
-            "favorites": favorites
-        })
+        return Response({"message": "Favorites List for user", "favorites": favorites})
