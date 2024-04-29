@@ -356,12 +356,49 @@ class LandMarkAtPos(APIView):
 
         # 데이터베이스에서 해당하는 좌표에 해당하는 객체들을 가져오기
         landmarks = LandMark.objects.filter(X_COORD=x_coord, Y_COORD=y_coord)
-
-        # Serializer를 사용하여 객체들을 직렬화
-        serializer = LandMarkListSerializer(landmarks, many=True)
-
-        # 직렬화된 데이터 반환
-        return Response(serializer.data)
+        # 문화공간인 경우만 필터링
+        cultural_landmarks = landmarks.filter(TYPE="문화공간")
+        data = []
+        if cultural_landmarks:
+            # serializer = LandMarkListSerializer(cultural_landmarks)
+            # events = CultureEvent.objects.filter(LOT=x_coord, LAT=y_coord)
+            for landmark in cultural_landmarks:
+                # 해당 문화공간의 이벤트 가져오기
+                events = CultureEvent.objects.filter(LOT=x_coord, LAT=y_coord)
+                landmark_data = {
+                    "id": landmark.id,
+                    "REF_ID": landmark.REF_ID,
+                    "ADDR": landmark.ADDR,
+                    "NAME": landmark.NAME,
+                    "X_COORD": landmark.X_COORD,
+                    "Y_COORD": landmark.Y_COORD,
+                    "TYPE": landmark.TYPE,
+                    "TITLE": landmark.TITLE,
+                    "IMG": landmark.IMG,
+                    "SUBJECT": landmark.SUBJECT,
+                    # 이벤트 정보 추가
+                    "EVENTS": [
+                        {
+                            "REF_ID": event.REF_ID,
+                            "ADDR": event.PLACE,
+                            "NAME": event.TITLE,
+                            "X_COORD": event.LOT,
+                            "Y_COORD": event.LAT,
+                            "TYPE": "문화행사",
+                            "IMG": event.MAIN_IMG,
+                            "SUBJECT": event.CODENAME,
+                            "startDate": event.STRTDATE,
+                            "endDate": event.END_DATE,
+                        }
+                        for event in events
+                    ],
+                }
+                data.append(landmark_data)
+            return JsonResponse(data, safe=False)
+        else:
+            serializer = LandMarkListSerializer(landmarks, many=True)
+            # 직렬화된 데이터 반환
+            return Response(serializer.data)
 
 
 class LandMarkDetail(APIView):
