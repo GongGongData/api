@@ -76,7 +76,7 @@ def get_geocode(address):
 # 서울은 미술관 현황
 def test2(request):
     api_key = SEOUL_API_KEY
-    api_url = SeoulisArtMuseum.get_api_url(api_key, 1, 1)
+    api_url = SeoulisArtMuseum.get_api_url(api_key, 1, 30)
     response = requests.get(api_url)
 
     if response.status_code == 200:
@@ -360,12 +360,11 @@ class LandMarkAtPos(APIView):
         cultural_landmarks = landmarks.filter(TYPE="문화공간")
         data = []
         if cultural_landmarks:
-            # serializer = LandMarkListSerializer(cultural_landmarks)
-            # events = CultureEvent.objects.filter(LOT=x_coord, LAT=y_coord)
             for landmark in cultural_landmarks:
                 # 해당 문화공간의 이벤트 가져오기
                 events = CultureEvent.objects.filter(LOT=x_coord, LAT=y_coord)
-                landmark_data = {
+                museums = landmarks.filter(TYPE="서울은미술관")
+                space_data = {
                     "id": landmark.id,
                     "REF_ID": landmark.REF_ID,
                     "ADDR": landmark.ADDR,
@@ -376,24 +375,46 @@ class LandMarkAtPos(APIView):
                     "TITLE": landmark.TITLE,
                     "IMG": landmark.IMG,
                     "SUBJECT": landmark.SUBJECT,
-                    # 이벤트 정보 추가
-                    "EVENTS": [
-                        {
-                            "REF_ID": event.REF_ID,
-                            "ADDR": event.PLACE,
-                            "NAME": event.TITLE,
-                            "X_COORD": event.LOT,
-                            "Y_COORD": event.LAT,
-                            "TYPE": "문화행사",
-                            "IMG": event.MAIN_IMG,
-                            "SUBJECT": event.CODENAME,
-                            "startDate": event.STRTDATE,
-                            "endDate": event.END_DATE,
-                        }
-                        for event in events
-                    ],
                 }
-                data.append(landmark_data)
+                data.append(space_data)
+                if events:
+                    event_data = {
+                        "EVENTS": [
+                            {
+                                "REF_ID": event.REF_ID,
+                                "ADDR": event.PLACE,
+                                "NAME": event.TITLE,
+                                "X_COORD": event.LOT,
+                                "Y_COORD": event.LAT,
+                                "TYPE": "문화행사",
+                                "IMG": event.MAIN_IMG,
+                                "SUBJECT": event.CODENAME,
+                                "startDate": event.STRTDATE,
+                                "endDate": event.END_DATE,
+                            }
+                            for event in events
+                        ],
+                    }
+                    data.append(event_data)
+                if museums:
+                    museum_data = {
+                        "MUSEUMS": [
+                            {
+                                "REF_ID": museum.REF_ID,
+                                "ADDR": museum.PLACE,
+                                "NAME": museum.TITLE,
+                                "X_COORD": museum.LOT,
+                                "Y_COORD": museum.LAT,
+                                "TYPE": "서울은미술관",
+                                "IMG": museum.MAIN_IMG,
+                                "SUBJECT": museum.CODENAME,
+                                "startDate": museum.STRTDATE,
+                                "endDate": museum.END_DATE,
+                            }
+                            for museum in museums
+                        ],
+                    }
+                    data.append(museum_data)
             return JsonResponse(data, safe=False)
         else:
             serializer = LandMarkListSerializer(landmarks, many=True)
