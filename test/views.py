@@ -354,72 +354,15 @@ class LandMarkAtPos(APIView):
             # X_COORD나 Y_COORD가 주어지지 않은 경우 에러 응답 반환
             return Response({"error": "X_COORD and Y_COORD parameters are required"}, status=400)
 
-        # 데이터베이스에서 해당하는 좌표에 해당하는 객체들을 가져오기
-        landmarks = LandMark.objects.filter(X_COORD=x_coord, Y_COORD=y_coord)
-        # 문화공간인 경우만 필터링
-        cultural_landmarks = landmarks.filter(TYPE="문화공간")
-        data = []
-        if cultural_landmarks:
-            for landmark in cultural_landmarks:
-                # 해당 문화공간의 이벤트 가져오기
-                events = CultureEvent.objects.filter(LOT=x_coord, LAT=y_coord)
-                museums = landmarks.filter(TYPE="서울은미술관")
-                space_data = {
-                    "id": landmark.id,
-                    "REF_ID": landmark.REF_ID,
-                    "ADDR": landmark.ADDR,
-                    "NAME": landmark.NAME,
-                    "X_COORD": landmark.X_COORD,
-                    "Y_COORD": landmark.Y_COORD,
-                    "TYPE": landmark.TYPE,
-                    "TITLE": landmark.TITLE,
-                    "IMG": landmark.IMG,
-                    "SUBJECT": landmark.SUBJECT,
-                }
-                data.append(space_data)
-                if events:
-                    event_data = {
-                        "EVENTS": [
-                            {
-                                "REF_ID": event.REF_ID,
-                                "ADDR": event.PLACE,
-                                "NAME": event.TITLE,
-                                "X_COORD": event.LOT,
-                                "Y_COORD": event.LAT,
-                                "TYPE": "문화행사",
-                                "IMG": event.MAIN_IMG,
-                                "SUBJECT": event.CODENAME,
-                                "startDate": event.STRTDATE,
-                                "endDate": event.END_DATE,
-                            }
-                            for event in events
-                        ],
-                    }
-                    data.append(event_data)
-                if museums:
-                    museum_data = {
-                        "MUSEUMS": [
-                            {
-                                "REF_ID": museum.REF_ID,
-                                "ADDR": museum.PLACE,
-                                "NAME": museum.TITLE,
-                                "X_COORD": museum.LOT,
-                                "Y_COORD": museum.LAT,
-                                "TYPE": "서울은미술관",
-                                "IMG": museum.MAIN_IMG,
-                                "SUBJECT": museum.CODENAME,
-                                "startDate": museum.STRTDATE,
-                                "endDate": museum.END_DATE,
-                            }
-                            for museum in museums
-                        ],
-                    }
-                    data.append(museum_data)
-            return JsonResponse(data, safe=False)
-        else:
-            serializer = LandMarkListSerializer(landmarks, many=True)
-            # 직렬화된 데이터 반환
-            return Response(serializer.data)
+        landmarks_at_pos = LandMark.objects.filter(X_COORD=x_coord, Y_COORD=y_coord)
+
+        space = landmarks_at_pos.filter(TYPE="문화공간").first()
+        art_n_museum = landmarks_at_pos.filter(TYPE__in=["서울은미술관", "문화행사"])
+
+        return JsonResponse({
+            "SPACE": LandMarkListSerializer(space, many=False).data if space else None,
+            "LIST": LandMarkListSerializer(art_n_museum, many=True).data,
+        })
 
 
 class LandMarkDetail(APIView):
