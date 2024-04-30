@@ -1,3 +1,5 @@
+from enum import Enum
+
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -89,6 +91,12 @@ class SeoulisArtMuseum(models.Model):
 
     def __str__(self):
         return self.GA_KNAME
+
+
+class LandmarkType(Enum):
+    MUSEUM = "서울은미술관"
+    SPACE = "문화공간"
+    EVENT = "문화행사"
 
 
 class LandMark(models.Model):

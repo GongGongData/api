@@ -218,7 +218,7 @@ def landmark(request):
                     NAME=landmark.get("GA_KNAME"),
                     X_COORD=coords[0],
                     Y_COORD=coords[1],
-                    TYPE="서울은미술관",
+                    TYPE=LandmarkType.MUSEUM.value,
                     TITLE=landmark.get("GA_ADDR2", ""),
                     IMG="",
                     SUBJECT="미술품",
@@ -254,7 +254,7 @@ def landmark(request):
                     NAME=landmark.get("FAC_NAME"),
                     X_COORD=x_coord_float,
                     Y_COORD=y_coord_float,
-                    TYPE="문화공간",
+                    TYPE=LandmarkType.SPACE.value,
                     TITLE=landmark.get("FAC_NAME", ""),
                     IMG=landmark.get("MAIN_IMG", ""),
                     SUBJECT=landmark.get("SUBJCODE", ""),
@@ -299,7 +299,7 @@ def landmark(request):
                         NAME=landmark.get("TITLE"),
                         X_COORD=x_coord_float,
                         Y_COORD=y_coord_float,
-                        TYPE="문화행사",
+                        TYPE=LandmarkType.EVENT.value,
                         TITLE=landmark.get("PLACE", ""),
                         IMG=landmark.get("MAIN_IMG", ""),
                         SUBJECT=landmark.get("CODENAME", ""),
@@ -356,8 +356,8 @@ class LandMarkAtPos(APIView):
 
         landmarks_at_pos = LandMark.objects.filter(X_COORD=x_coord, Y_COORD=y_coord)
 
-        space = landmarks_at_pos.filter(TYPE="문화공간").first()
-        art_n_museum = landmarks_at_pos.filter(TYPE__in=["서울은미술관", "문화행사"])
+        space = landmarks_at_pos.filter(TYPE=LandmarkType.SPACE.value).first()
+        art_n_museum = landmarks_at_pos.filter(TYPE__in=[LandmarkType.MUSEUM.value, LandmarkType.EVENT.value])
 
         return JsonResponse({
             "SPACE": LandMarkListSerializer(space, many=False).data if space else None,
@@ -383,21 +383,21 @@ class LandMarkDetail(APIView):
             # ref_id type 주어지지 않은 경우 에러 응답 반환
             return Response({"error": "ref_id and type parameters are required"}, status=400)
         # 서울은미술관
-        if ref_id and type == "서울은미술관":
+        if ref_id and type == LandmarkType.MUSEUM.value:
             museum_api_url = f"http://openapi.seoul.go.kr:8088/{api_key}/json/tvGonggongArt/1/1/{ref_id}"
             museum_response = requests.get(museum_api_url)
             if museum_response.status_code == 200:
                 museum_data = museum_response.json()["tvGonggongArt"]["row"][0]
                 return Response(museum_data)
         # 문화공간
-        if ref_id and type == "문화공간":
+        if ref_id and type == LandmarkType.SPACE.value:
             culture_place_api_url = f"http://openapi.seoul.go.kr:8088/{api_key}/json/culturalSpaceInfo/1/1/{ref_id}"
             culture_place_response = requests.get(culture_place_api_url)
             if culture_place_response.status_code == 200:
                 culture_space_data = culture_place_response.json()["culturalSpaceInfo"]["row"][0]
                 return Response(culture_space_data)
         # 문화행사
-        if ref_id and type == "문화행사":
+        if ref_id and type == LandmarkType.EVENT.value:
             data = CultureEvent.objects.get(REF_ID=ref_id)
             serializer = CultureEventDetail(data)
             return Response(serializer.data)
