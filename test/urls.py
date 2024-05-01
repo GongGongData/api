@@ -1,17 +1,13 @@
-from django.contrib import admin
-from django.urls import path, include, re_path
-from django.conf import settings
+from django.urls import path
+
 from . import views
 from .views import *
 
 urlpatterns = [
     path("test1", views.GetSeoulMunicipalArtMuseum),
-    path("test2", views.test2),
-    path("test3", views.test3),
-    path("test4", views.test4),
+    path("test2", views.make_museum_test),
     path("landmark", views.landmark),
-    path("geocode", views.geocode_test),
-    path("cultureEvent", views.cultureEvent),
+    path("cultureEvent", views.make_event_test),
     path(
         "favorite",
         LandMarkFavoriteList.as_view(),

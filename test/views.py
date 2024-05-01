@@ -1,31 +1,27 @@
-import json
-
-import googlemaps, requests
-from django.shortcuts import render
-from django.http import JsonResponse, HttpResponse
-from django.views.decorators.csrf import csrf_exempt
-
-from gonggongapp.settings import SEOUL_API_KEY, GOOGLE_API_KEY
+import googlemaps
+import requests
 from bs4 import BeautifulSoup
-from datetime import datetime
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
-from rest_framework.schemas import ManualSchema
-from drf_yasg.utils import swagger_auto_schema
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from gonggongapp.settings import GOOGLE_API_KEY
+from .gonggong_api import GonggongApi
+
+from .models import *
+from .serializers import *
+
 
 # Create your views here.
-
-from .serializers import *
-from .models import *
 
 
 # 서울시립미술관 전시 정보 (국문)
 def GetSeoulMunicipalArtMuseum(request):
-    api_key = SEOUL_API_KEY
-    api_url = SeoulMunicipalArtMuseum.get_api_url(api_key, 1, 1000)
+    api_url = GonggongApi.museum_list_url(1, 1000)
     response = requests.get(api_url)
 
     if response.status_code == 200:
@@ -50,17 +46,6 @@ def GetSeoulMunicipalArtMuseum(request):
         return JsonResponse({"error_message": error_message}, status=500)
 
 
-def geocode_test(request):
-    gmaps = googlemaps.Client(key=GOOGLE_API_KEY)
-    result = []
-    # all = SeoulMunicipalArtMuseum.objects.all()
-    # for elem in all:
-    #     result.append(elem.get("DP_PLACE"))
-    first = SeoulMunicipalArtMuseum.objects.first()
-    geocode_result = gmaps.geocode(first.DP_PLACE, region="kr", language="ko")
-    return JsonResponse({"place": first.DP_PLACE, "result": geocode_result}, status=200)
-
-
 def get_geocode(address):
     gmaps = googlemaps.Client(key=GOOGLE_API_KEY)
     geocode_result = gmaps.geocode(address, region="kr", language="ko")
@@ -74,9 +59,8 @@ def get_geocode(address):
 
 
 # 서울은 미술관 현황
-def test2(request):
-    api_key = SEOUL_API_KEY
-    api_url = SeoulisArtMuseum.get_api_url(api_key, 1, 30)
+def make_museum_test(request):
+    api_url = GonggongApi.museum_list_url(1, 30)
     response = requests.get(api_url)
 
     if response.status_code == 200:
@@ -93,37 +77,8 @@ def test2(request):
         return JsonResponse({"error_message": error_message}, status=500)
 
 
-# 서울은미술관 Detail API
-def test3(request):
-    api_key = SEOUL_API_KEY
-    api_url = f"http://openapi.seoul.go.kr:8088/{api_key}/json/culturalEventInfo/1/5/%20/창작뮤지컬/2023"
-
-    response = requests.get(api_url)
-
-    if response.status_code == 200:
-        return JsonResponse(response.json())
-    else:
-        error_message = f"Failed to fetch data. Status code: {response.status_code}"
-        return JsonResponse({"error_message": error_message}, status=500)
-
-
-# 서울시 공영주차장
-def test4(request):
-    api_key = SEOUL_API_KEY
-    api_url = f"http://openapi.seoul.go.kr:8088/{api_key}/json/GetParkInfo/1/5/"
-    response = requests.get(api_url)
-
-    if response.status_code == 200:
-        return JsonResponse(response.json())
-    else:
-        error_message = f"Failed to fetch data. Status code: {response.status_code}"
-        return JsonResponse({"error_message": error_message}, status=500)
-
-
-def cultureEvent(request):
+def make_event_test(request):
     all_success = True
-    api_key = SEOUL_API_KEY
-    culture_event_api_url_base = f"http://openapi.seoul.go.kr:8088/{api_key}/json/culturalEventInfo/"
 
     event_page_size = 1000
     event_total_pages = 5
@@ -131,7 +86,8 @@ def cultureEvent(request):
     for page in range(1, event_total_pages + 1):
         start_index = (page - 1) * event_page_size + 1
         end_index = page * event_page_size
-        culture_event_api_url = culture_event_api_url_base + f"{start_index}/{end_index}/"
+
+        culture_event_api_url = GonggongApi.event_list_url(start_index, end_index)
         culture_event_response = requests.get(culture_event_api_url)
 
         if culture_event_response.status_code == 200:
@@ -189,103 +145,101 @@ def cultureEvent(request):
 
 
 def landmark(request):
-    api_key = SEOUL_API_KEY
-    # url import
-    museum_api_url = f"http://openapi.seoul.go.kr:8088/{api_key}/json/tvGonggongArt/1/30/"
-    culture_place_api_url = f"http://openapi.seoul.go.kr:8088/{api_key}/json/culturalSpaceInfo/1/1000/"
+    error_messages = []
 
-    event_page_size = 1000
-    event_total_pages = 5
-    culture_event_api_url_base = f"http://openapi.seoul.go.kr:8088/{api_key}/json/culturalEventInfo/"
-
+    museum_api_url = GonggongApi.museum_list_url()
     museum_response = requests.get(museum_api_url)
-    culture_place_response = requests.get(culture_place_api_url)
 
-    all_success = True  # 모든 요청이 성공했는지 여부를 추적하는 플래그 변수
-
-    # 서울은미술관
-    if museum_response.status_code == 200:
+    ##### 서울은미술관 #####
+    if museum_response.status_code != 200:
+        error_messages.append("Failed to fetch seoul is museum data.")
+    else:
         data = museum_response.json()
         # 데이터를 모델에 저장
-        landmarks = data.get("tvGonggongArt", {}).get("row", [])
-        for landmark in landmarks:
+        museums = data.get("tvGonggongArt", {}).get("row", [])
+        for museum in museums:
+            ref_id = museum.get("GA_KNAME", "")
             # 중복 데이터 확인
-            if not LandMark.objects.filter(NAME=landmark.get("GA_KNAME", "")).exists():
-                coords = get_geocode(landmark.get("GA_ADDR1"))
+            if not LandMark.objects.filter(NAME=ref_id).exists():
+                coords = get_geocode(museum.get("GA_ADDR1"))
                 LandMark.objects.create(
-                    REF_ID=landmark.get("GA_KNAME").replace(" ", "_"),
-                    ADDR=landmark.get("GA_ADDR1") + " " + landmark.get("GA_ADDR2"),
-                    NAME=landmark.get("GA_KNAME"),
+                    REF_ID=ref_id,
+                    ADDR=museum.get("GA_ADDR1") + " " + museum.get("GA_ADDR2"),
+                    NAME=museum.get("GA_KNAME"),
                     X_COORD=coords[0],
                     Y_COORD=coords[1],
                     TYPE=LandmarkType.MUSEUM.value,
-                    TITLE=landmark.get("GA_ADDR2", ""),
+                    TITLE=museum.get("GA_ADDR2", ""),
                     IMG="",
                     SUBJECT="미술품",
                     startDate=None,
                     endDate=None,
                 )
-        pass
+
+    ##### 문화공간 #####
+    culture_place_api_url = GonggongApi.space_list_url()
+    culture_place_response = requests.get(culture_place_api_url)
+
+    if culture_place_response.status_code != 200:
+        error_messages.append("Failed to fetch culture place data.")
     else:
-        all_success = False
-        error_message = "Failed to fetch seoul is museum data."
-        return JsonResponse({"error_message": error_message}, status=500)
-        # 문화공간
-    if culture_place_response.status_code == 200:
         data = culture_place_response.json()
-        # 데이터를 모델에 저장
-        landmarks = data.get("culturalSpaceInfo", {}).get("row", [])
-        for landmark in landmarks:
+        spaces = data.get("culturalSpaceInfo", {}).get("row", [])
+        for space in spaces:
+            ref_id = space.get("NUM", "")
+
             # 중복 데이터 확인
-            if not LandMark.objects.filter(REF_ID=landmark.get("NUM", "")).exists():
-                x_coord = landmark.get("X_COORD")
-                y_coord = landmark.get("Y_COORD")
+            if not LandMark.objects.filter(REF_ID=ref_id).exists():
+                x_coord = space.get("X_COORD")
+                y_coord = space.get("Y_COORD")
                 if x_coord and y_coord:
                     x_coord_float = float(x_coord)
                     y_coord_float = float(y_coord)
                 else:
-                    coords = get_geocode(landmark.get("ADDR"))
+                    coords = get_geocode(space.get("ADDR"))
                     x_coord_float = coords[0]
                     y_coord_float = coords[1]
 
                 LandMark.objects.create(
-                    REF_ID=landmark.get("NUM"),
-                    ADDR=landmark.get("ADDR"),
-                    NAME=landmark.get("FAC_NAME"),
+                    REF_ID=ref_id,
+                    ADDR=space.get("ADDR"),
+                    NAME=space.get("FAC_NAME"),
                     X_COORD=x_coord_float,
                     Y_COORD=y_coord_float,
                     TYPE=LandmarkType.SPACE.value,
-                    TITLE=landmark.get("FAC_NAME", ""),
-                    IMG=landmark.get("MAIN_IMG", ""),
-                    SUBJECT=landmark.get("SUBJCODE", ""),
+                    TITLE=space.get("FAC_NAME", ""),
+                    IMG=space.get("MAIN_IMG", ""),
+                    SUBJECT=space.get("SUBJCODE", ""),
                     startDate=None,
                     endDate=None,
                 )
-        pass
-    else:
-        all_success = False
-        error_message = "Failed to fetch culture place data."
-        return JsonResponse({"error_message": error_message}, status=500)
-    # 문화행사
-    for page in range(1, event_total_pages + 1):
-        start_index = (page - 1) * event_page_size + 1
-        end_index = page * event_page_size
-        culture_event_api_url = culture_event_api_url_base + f"{start_index}/{end_index}/"
+
+    ##### 문화행사 #####
+    page_size = 1000
+
+    response_for_count = requests.get(GonggongApi.event_list_url(1, 5))
+    total_count = response_for_count.json().get("culturalEventInfo", {}).get("list_total_count", [])
+
+    for start_index in range(1, total_count, page_size):
+        end_index = start_index + page_size - 1
+
+        culture_event_api_url = GonggongApi.event_list_url(start_index, end_index)
         culture_event_response = requests.get(culture_event_api_url)
 
-        if culture_event_response.status_code == 200:
+        if culture_event_response.status_code != 200:
+            error_messages.append(f"Failed to fetch culture event data[{start_index}:{end_index}].")
+        else:
             data = culture_event_response.json()
-            # 데이터를 모델에 저장
-            landmarks = data.get("culturalEventInfo", {}).get("row", [])
-            for landmark in landmarks:
+            events = data.get("culturalEventInfo", {}).get("row", [])
+            for event in events:
+                ref_id = event.get("TITLE")
                 # 중복 데이터 확인
-                ref_id = landmark.get("TITLE")
                 if not LandMark.objects.filter(REF_ID=ref_id).exists():
-                    x_coord = landmark.get("LOT")
-                    y_coord = landmark.get("LAT")
+                    x_coord = event.get("LOT")
+                    y_coord = event.get("LAT")
 
                     if "°" in x_coord or x_coord == "" or "°" in y_coord or y_coord == "":
-                        coords = get_geocode(landmark.get("ORG_NAME"))
+                        coords = get_geocode(event.get("ORG_NAME"))
 
                         x_coord_float = coords[0]
                         y_coord_float = coords[1]
@@ -295,24 +249,22 @@ def landmark(request):
 
                     LandMark.objects.create(
                         REF_ID=ref_id,
-                        ADDR=landmark.get("GUNAME", "") + " " + landmark.get("PLACE", ""),
-                        NAME=landmark.get("TITLE"),
+                        ADDR=event.get("GUNAME", "") + " " + event.get("PLACE", ""),
+                        NAME=event.get("TITLE"),
                         X_COORD=x_coord_float,
                         Y_COORD=y_coord_float,
                         TYPE=LandmarkType.EVENT.value,
-                        TITLE=landmark.get("PLACE", ""),
-                        IMG=landmark.get("MAIN_IMG", ""),
-                        SUBJECT=landmark.get("CODENAME", ""),
-                        startDate=landmark.get("STRTDATE"),
-                        endDate=landmark.get("END_DATE"),
+                        TITLE=event.get("PLACE", ""),
+                        IMG=event.get("MAIN_IMG", ""),
+                        SUBJECT=event.get("CODENAME", ""),
+                        startDate=event.get("STRTDATE"),
+                        endDate=event.get("END_DATE"),
                     )
-        else:
-            all_success = False
-            error_message = f"Failed to fetch culture event data."
-            return JsonResponse({"error_message": error_message}, status=500)
 
-    if all_success:
-        return JsonResponse({"message": "All data saved successfully."})
+    return JsonResponse({
+        "message": "Data saved successfully.",
+        "error_messages": error_messages
+    })
 
 
 class LandMarkList(APIView):
@@ -377,27 +329,26 @@ class LandMarkDetail(APIView):
         ref_id = request.query_params.get("REF_ID", None)
         type = request.query_params.get("TYPE", None)
 
-        api_key = SEOUL_API_KEY
-
         if ref_id is None or type is None:
             # ref_id type 주어지지 않은 경우 에러 응답 반환
             return Response({"error": "ref_id and type parameters are required"}, status=400)
         # 서울은미술관
-        if ref_id and type == LandmarkType.MUSEUM.value:
-            museum_api_url = f"http://openapi.seoul.go.kr:8088/{api_key}/json/tvGonggongArt/1/1/{ref_id}"
+        if type == LandmarkType.MUSEUM.value:
+
+            museum_api_url = GonggongApi.museum_detail_url(ref_id)
             museum_response = requests.get(museum_api_url)
             if museum_response.status_code == 200:
                 museum_data = museum_response.json()["tvGonggongArt"]["row"][0]
                 return Response(museum_data)
         # 문화공간
-        if ref_id and type == LandmarkType.SPACE.value:
-            culture_place_api_url = f"http://openapi.seoul.go.kr:8088/{api_key}/json/culturalSpaceInfo/1/1/{ref_id}"
-            culture_place_response = requests.get(culture_place_api_url)
-            if culture_place_response.status_code == 200:
-                culture_space_data = culture_place_response.json()["culturalSpaceInfo"]["row"][0]
+        if type == LandmarkType.SPACE.value:
+            space_api_url = GonggongApi.space_detail_url(ref_id)
+            space_response = requests.get(space_api_url)
+            if space_response.status_code == 200:
+                culture_space_data = space_response.json()["culturalSpaceInfo"]["row"][0]
                 return Response(culture_space_data)
         # 문화행사
-        if ref_id and type == LandmarkType.EVENT.value:
+        if type == LandmarkType.EVENT.value:
             data = CultureEvent.objects.get(REF_ID=ref_id)
             serializer = CultureEventDetail(data)
             return Response(serializer.data)

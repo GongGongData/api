@@ -28,10 +28,6 @@ class SeoulMunicipalArtMuseum(models.Model):
     DP_DATE = models.DateField()
 
     @staticmethod
-    def get_api_url(api_key: str, start_index=1, end_index=20):
-        return f"http://openapi.seoul.go.kr:8088/{api_key}/json/ListExhibitionOfSeoulMOAInfo/{start_index}/{end_index}/"
-
-    @staticmethod
     def of(json_data, clean_text):
         return SeoulMunicipalArtMuseum(
             DP_EX_NO=json_data.get("DP_EX_NO", ""),
@@ -70,10 +66,6 @@ class SeoulisArtMuseum(models.Model):
     GA_ADDR2 = models.CharField(max_length=1000, blank=True)
     GA_DETAIL = models.TextField()
     CODE_A1 = models.CharField(max_length=1000, blank=True)
-
-    @staticmethod
-    def get_api_url(api_key: str, start_index=1, end_index=30):
-        return f"http://openapi.seoul.go.kr:8088/{api_key}/json/tvGonggongArt/{start_index}/{end_index}/"
 
     @staticmethod
     def of(json_data):
