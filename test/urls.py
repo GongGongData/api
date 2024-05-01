@@ -4,10 +4,6 @@ from . import views
 from .views import *
 
 urlpatterns = [
-    path("test1", views.GetSeoulMunicipalArtMuseum),
-    path("test2", views.make_museum_test),
-    path("landmark", views.landmark),
-    path("cultureEvent", views.make_event_test),
     path(
         "favorite",
         LandMarkFavoriteList.as_view(),

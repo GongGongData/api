@@ -27,6 +27,7 @@ urlpatterns = [
     #########################################################
     path("test/", include('test.urls')),
     path("auth/", include('uuidauth.urls')),
+    path("migrate/", include('migrate.urls')),
 ]
 
 schema_view = get_schema_view(

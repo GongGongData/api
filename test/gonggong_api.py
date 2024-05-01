@@ -4,7 +4,7 @@ from gonggongapp.settings import SEOUL_API_KEY
 class GonggongApi:
     @staticmethod
     def museum_detail_url(ref_id):
-        return f"http://openapi.seoul.go.kr:8088/{SEOUL_API_KEY}/json/tvGonggongArt/1/1/{ref_id}"
+        return f"http://openapi.seoul.go.kr:8088/{SEOUL_API_KEY}/json/tvGonggongArt/1/1/{ref_id.replace(" ", "_")}"
 
     @staticmethod
     def space_detail_url(ref_id):
