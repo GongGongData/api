@@ -1,4 +1,5 @@
 import requests
+from django.db.models import Q
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from drf_yasg import openapi
@@ -31,6 +32,33 @@ class LandMarkList(APIView):
         # Serializer를 사용하여 객체들을 직렬화
         serializer = LandMarkListSerializer(unique_landmarks, many=True)
         return Response(serializer.data)
+
+
+class LandMarkSearch(APIView):
+    @swagger_auto_schema(
+        operation_summary="검색",
+        manual_parameters=[
+            openapi.Parameter("search", openapi.IN_QUERY, description="검색어", type=openapi.TYPE_STRING),
+        ],
+    )
+    def get(self, request):
+        search_word = request.query_params.get("search")
+        if not search_word:
+            return JsonResponse({
+                "message": "No Search Word",
+            })
+
+        landmarks = LandMark.objects.filter(
+            Q(ADDR__icontains=search_word)
+            | Q(NAME__icontains=search_word)
+            | Q(TITLE__icontains=search_word)
+            | Q(SUBJECT__icontains=search_word)
+        )
+
+        return JsonResponse({
+            "message": "OK",
+            "data": LandMarkListSerializer(landmarks, many=True).data
+        })
 
 
 class LandMarkAtPos(APIView):

@@ -15,6 +15,11 @@ urlpatterns = [
         name="LandMarkList",
     ),
     path(
+        "LandMarkSearch/",
+        LandMarkSearch.as_view(),
+        name="LandMarkSearch"
+    ),
+    path(
         "LandMarkAtPos/",
         LandMarkAtPos.as_view(),
         name="LandMarkAtPos",
