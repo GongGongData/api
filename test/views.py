@@ -48,12 +48,7 @@ class LandMarkSearch(APIView):
                 "message": "No Search Word",
             })
 
-        landmarks = LandMark.objects.filter(
-            Q(ADDR__icontains=search_word)
-            | Q(NAME__icontains=search_word)
-            | Q(TITLE__icontains=search_word)
-            | Q(SUBJECT__icontains=search_word)
-        )
+        landmarks = LandMark.objects.filter(LandMark.Q_search(search_word))
 
         return JsonResponse({
             "message": "OK",
@@ -67,12 +62,14 @@ class LandMarkAtPos(APIView):
         manual_parameters=[
             openapi.Parameter("X_COORD", openapi.IN_QUERY, description="X coordinate", type=openapi.TYPE_NUMBER),
             openapi.Parameter("Y_COORD", openapi.IN_QUERY, description="Y coordinate", type=openapi.TYPE_NUMBER),
+            openapi.Parameter("search", openapi.IN_QUERY, description="Y coordinate", type=openapi.TYPE_NUMBER),
         ],
     )
     def get(self, request):
         # 요청으로부터 X_COORD와 Y_COORD 값을 가져오기
         x_coord = request.query_params.get("X_COORD", None)
         y_coord = request.query_params.get("Y_COORD", None)
+        search_word = request.query_params.get("search", None)
 
         if x_coord is None or y_coord is None:
             # X_COORD나 Y_COORD가 주어지지 않은 경우 에러 응답 반환
@@ -82,6 +79,9 @@ class LandMarkAtPos(APIView):
 
         space = landmarks_at_pos.filter(TYPE=LandmarkType.SPACE.value).first()
         art_n_museum = landmarks_at_pos.filter(TYPE__in=[LandmarkType.MUSEUM.value, LandmarkType.EVENT.value])
+
+        if search_word:
+            art_n_museum.filter(LandMark.Q_search(search_word))
 
         return JsonResponse({
             "SPACE": LandMarkListSerializer(space, many=False).data if space else None,

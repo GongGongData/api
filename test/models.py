@@ -2,6 +2,7 @@ from enum import Enum
 
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models import Q
 
 
 # Create your models here.
@@ -103,6 +104,15 @@ class LandMark(models.Model):
     SUBJECT = models.CharField(max_length=300, default="")
     startDate = models.CharField(max_length=500, null=True)
     endDate = models.CharField(max_length=500, null=True)
+
+    @staticmethod
+    def Q_search(search_word):
+        return (
+            Q(ADDR__icontains=search_word)
+            | Q(NAME__icontains=search_word)
+            | Q(TITLE__icontains=search_word)
+            | Q(SUBJECT__icontains=search_word)
+        )
 
     def __str__(self):
         return self.NAME
