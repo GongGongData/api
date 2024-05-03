@@ -65,7 +65,7 @@ class LandMarkAtPos(APIView):
             openapi.Parameter("Y_COORD", openapi.IN_QUERY,
                               required=True, description="Y coordinate", type=openapi.TYPE_NUMBER),
             openapi.Parameter("search", openapi.IN_QUERY,
-                              required=True, description="optional) 검색을 위한 파라미터", type=openapi.TYPE_STRING),
+                              required=False, description="optional) 검색을 위한 파라미터", type=openapi.TYPE_STRING),
         ],
     )
     def get(self, request):
