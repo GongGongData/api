@@ -60,9 +60,12 @@ class LandMarkAtPos(APIView):
     @swagger_auto_schema(
         operation_summary="위도 경도 기반으로 데이터 로드",
         manual_parameters=[
-            openapi.Parameter("X_COORD", openapi.IN_QUERY, description="X coordinate", type=openapi.TYPE_NUMBER),
-            openapi.Parameter("Y_COORD", openapi.IN_QUERY, description="Y coordinate", type=openapi.TYPE_NUMBER),
-            openapi.Parameter("search", openapi.IN_QUERY, description="Y coordinate", type=openapi.TYPE_NUMBER),
+            openapi.Parameter("X_COORD", openapi.IN_QUERY,
+                              required=True, description="X coordinate", type=openapi.TYPE_NUMBER),
+            openapi.Parameter("Y_COORD", openapi.IN_QUERY,
+                              required=True, description="Y coordinate", type=openapi.TYPE_NUMBER),
+            openapi.Parameter("search", openapi.IN_QUERY,
+                              required=True, description="optional) 검색을 위한 파라미터", type=openapi.TYPE_STRING),
         ],
     )
     def get(self, request):
