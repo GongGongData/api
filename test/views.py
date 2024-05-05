@@ -206,7 +206,7 @@ class LandMarkFavoriteList(APIView):
         lm_id = request.data["LANDMARK"]
 
         # 생성
-        landmark_favorite = LandmarkFavorite.objects.get_or_create(
+        landmark_favorite, created = LandmarkFavorite.objects.get_or_create(
             LANDMARK=LandMark.objects.get(pk=lm_id),
             USER=User(pk=request.user.id),
         )
@@ -228,7 +228,9 @@ class LandMarkFavoriteList(APIView):
         lm_id = request.data["LANDMARK"]
 
         # 중복제거
-        LandmarkFavorite.objects.filter(LANDMARK_id=lm_id, USER_id=request.user.id).delete()
+        count, _ = LandmarkFavorite.objects.filter(LANDMARK_id=lm_id, USER_id=request.user.id).delete()
+        if count == 0:
+            return Response({"message": f"No {lm_id}"})
 
         return Response({"message": "OK"})
 
@@ -276,9 +278,10 @@ class SearchHistoryList(APIView):
             return Response({"message": "Not logged in", "history": []}, status=401)
 
         landmark_id = request.data["LANDMARK_ID"]
-        search_history = SearchHistory.objects.get_or_create(
+        search_history, created = SearchHistory.objects.update_or_create(
             USER_id=request.user.id,
             LANDMARK_id=landmark_id,
+            defaults={"LAST_SEARCHED_AT": timezone.now(), }
         )
 
         return Response({
