@@ -184,6 +184,9 @@ class LandMarkFavoriteList(APIView):
 
     @swagger_auto_schema(tags=["즐겨찾기"])
     def get(self, request):
+        if not request.user.is_authenticated:
+            return Response({"message": "Not logged in"}, status=401)
+
         favorites = LandmarkFavorite.objects.filter(USER_id=request.user.id).select_related("LANDMARK")
         serializer = LandMarkFavoriteListSerializer(favorites, many=True)
         return Response({"message": "Favorites List for user", "favorites": serializer.data})
@@ -198,19 +201,36 @@ class LandMarkFavoriteList(APIView):
         tags=["즐겨찾기"],
     )
     def post(self, request):
+        if not request.user.is_authenticated:
+            return Response({"message": "Not logged in"}, status=401)
         lm_id = request.data["LANDMARK"]
 
-        # 중복제거
-        (LandmarkFavorite.objects.all().filter(LANDMARK_id=lm_id, USER_id=request.user.id).delete())
-
         # 생성
-        landmark_favorite = LandmarkFavorite.objects.create(
+        landmark_favorite = LandmarkFavorite.objects.get_or_create(
             LANDMARK=LandMark.objects.get(pk=lm_id),
             USER=User(pk=request.user.id),
         )
 
         favorites = LandMarkFavoriteListSerializer(landmark_favorite, many=False).data
         return Response({"message": "Favorites List for user", "favorites": favorites})
+
+    @csrf_exempt
+    @swagger_auto_schema(
+        operation_summary="즐겨찾기 삭제",
+        operation_description="랜드마크 ID 보내면 즐겨찾기 삭제",
+        request_body=LandMarkFavoritePostSerializer,
+        tags=["즐겨찾기"],
+    )
+    def delete(self, request):
+        if not request.user.is_authenticated:
+            return Response({"message": "Not logged in"}, status=401)
+
+        lm_id = request.data["LANDMARK"]
+
+        # 중복제거
+        LandmarkFavorite.objects.filter(LANDMARK_id=lm_id, USER_id=request.user.id).delete()
+
+        return Response({"message": "OK"})
 
 
 class SearchHistoryList(APIView):
@@ -266,6 +286,7 @@ class SearchHistoryList(APIView):
             "history": SearchHistorySerializer(search_history, many=False).data
         })
 
+    @csrf_exempt
     @swagger_auto_schema(
         operation_summary="검색 기록 삭제",
         operation_description="검색 기록 삭제는 기획 상에는 없지만 일단 만들어뒀습니다.",
