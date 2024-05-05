@@ -61,3 +61,11 @@ class CultureEventDetail(serializers.ModelSerializer):
     class Meta:
         model = CultureEvent
         fields = "__all__"
+
+
+class SearchHistorySerializer(serializers.ModelSerializer):
+    LANDMARK = LandMarkListSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = SearchHistory
+        fields = ["LANDMARK", "CREATED_AT", "LAST_SEARCHED_AT"]

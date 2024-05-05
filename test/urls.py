@@ -49,4 +49,9 @@ urlpatterns = [
         SeoulisArtMuseumDetail.as_view(),
         name="seoul_is_art_museum_detail",
     ),
+    path(
+        "search-histories/",
+        SearchHistoryList.as_view(),
+        name="search_histories",
+    )
 ]

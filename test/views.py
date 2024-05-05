@@ -1,6 +1,6 @@
 import requests
-from django.db.models import Q
 from django.http import JsonResponse
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -201,3 +201,82 @@ class LandMarkFavoriteList(APIView):
 
         favorites = LandMarkFavoriteListSerializer(landmark_favorite, many=False).data
         return Response({"message": "Favorites List for user", "favorites": favorites})
+
+
+class SearchHistoryList(APIView):
+    renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
+
+    @swagger_auto_schema(
+        operation_summary="검색 기록",
+        operation_description="""
+        사용자별로 지금 까지 한 검색 결과를 반환합니다.
+        ⚠️ 검색 후 상세 정보 들어갈 때, 검색 기록 생성 해주셔야 합니다.
+        """,
+        tags=["검색 기록"]
+    )
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return Response({"message": "Not logged in", "histories": []}, status=401)
+
+        histories = (SearchHistory.objects
+                     .filter(USER__id=request.user.id)
+                     .order_by("-LAST_SEARCHED_AT", "-CREATED_AT"))
+
+        return Response({
+            "message": "OK",
+            "histories": SearchHistorySerializer(histories, many=True).data
+        })
+
+    @csrf_exempt
+    @swagger_auto_schema(
+        operation_summary="검색 기록 생성",
+        operation_description="""
+            검색 후 상세 정보 들어갈 때 생성해주시면 됩니다.
+            """,
+        request_body=openapi.Schema(
+            title="LANDMARK_ID",
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'LANDMARK_ID': openapi.Schema(type=openapi.TYPE_NUMBER)
+            }),
+        tags=["검색 기록"]
+    )
+    def post(self, request):
+        if not request.user.is_authenticated:
+            return Response({"message": "Not logged in", "history": []}, status=401)
+
+        landmark_id = request.data["LANDMARK_ID"]
+        search_history = SearchHistory.objects.get_or_create(
+            USER_id=request.user.id,
+            LANDMARK_id=landmark_id,
+        )
+
+        return Response({
+            "message": "OK",
+            "history": SearchHistorySerializer(search_history, many=False).data
+        })
+
+    @swagger_auto_schema(
+        operation_summary="검색 기록 삭제",
+        operation_description="검색 기록 삭제는 기획 상에는 없지만 일단 만들어뒀습니다.",
+        request_body=openapi.Schema(
+            title="LANDMARK_ID",
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'LANDMARK_ID': openapi.Schema(type=openapi.TYPE_NUMBER)
+            }),
+        tags=["검색 기록"]
+    )
+    def delete(self, request):
+        if not request.user.is_authenticated:
+            return Response({"message": "Not logged in"}, status=401)
+
+        landmark_id = request.data["LANDMARK_ID"]
+        SearchHistory.objects.filter(
+            USER_id=request.user.id,
+            LANDMARK_id=landmark_id,
+        ).delete()
+
+        return Response({
+            "message": "OK",
+        })

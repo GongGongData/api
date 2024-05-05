@@ -151,3 +151,10 @@ class LandmarkFavorite(models.Model):
     LANDMARK = models.ForeignKey(LandMark, on_delete=models.CASCADE, related_name="favorites")
     USER = models.ForeignKey(User, on_delete=models.CASCADE, related_name="favorites")
     CREATED_AT = models.DateTimeField(auto_now_add=True)
+
+class SearchHistory(models.Model):
+    LANDMARK = models.ForeignKey(LandmarkFavorite, on_delete=models.CASCADE, related_name="search_history")
+    USER = models.ForeignKey(User, on_delete=models.CASCADE, related_name="search_history")
+    LAST_SEARCHED_AT = models.DateTimeField(auto_now_add=True)
+    CREATED_AT = models.DateTimeField(auto_now_add=True)
+
