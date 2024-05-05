@@ -15,6 +15,7 @@ from .serializers import *
 class LandMarkList(APIView):
     @swagger_auto_schema(
         operation_summary="전체 랜드마크 위도 경도 반환(중복제거 수행)",
+        tags=["랜드마크"]
     )
     def get(self, requets):
         # 데이터베이스로부터 중복을 제거한 좌표 쌍 가져오기
@@ -40,6 +41,7 @@ class LandMarkSearch(APIView):
         manual_parameters=[
             openapi.Parameter("search", openapi.IN_QUERY, description="검색어", type=openapi.TYPE_STRING),
         ],
+        tags=["랜드마크"]
     )
     def get(self, request):
         search_word = request.query_params.get("search")
@@ -67,6 +69,7 @@ class LandMarkAtPos(APIView):
             openapi.Parameter("search", openapi.IN_QUERY,
                               required=False, description="optional) 검색을 위한 파라미터", type=openapi.TYPE_STRING),
         ],
+        tags=["랜드마크"]
     )
     def get(self, request):
         # 요청으로부터 X_COORD와 Y_COORD 값을 가져오기
@@ -99,6 +102,7 @@ class LandMarkDetail(APIView):
             openapi.Parameter("REF_ID", openapi.IN_QUERY, description="REF_ID", type=openapi.TYPE_STRING),
             openapi.Parameter("TYPE", openapi.IN_QUERY, description="TYPE", type=openapi.TYPE_STRING),
         ],
+        tags=["랜드마크"]
     )
     def get(self, request):
         ref_id = request.query_params.get("REF_ID", None)
@@ -132,6 +136,7 @@ class LandMarkDetail(APIView):
 class SeoulMunicipalArtMuseumList(APIView):
     renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
 
+    @swagger_auto_schema(tags=["서울시립미술관"])
     def get(self, request):
         info_list = SeoulMunicipalArtMuseum.objects.all()
         serializer = SeoulMunicipalArtMuseumSerializer(info_list, many=True)
@@ -141,6 +146,7 @@ class SeoulMunicipalArtMuseumList(APIView):
 class SeoulMunicipalArtMuseumDetail(APIView):
     renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
 
+    @swagger_auto_schema(tags=["서울시립미술관"])
     def get(self, request, pk):
         try:
             detail_info = SeoulMunicipalArtMuseum.objects.get(id=pk)
@@ -153,6 +159,7 @@ class SeoulMunicipalArtMuseumDetail(APIView):
 class SeoulisArtMuseumList(APIView):
     renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
 
+    @swagger_auto_schema(tags=["서울시립미술관"])
     def get(self, request):
         info_list = SeoulisArtMuseum.objects.all()
         serializer = SeoulisArtMuseumSerializer(info_list, many=True)
@@ -162,6 +169,7 @@ class SeoulisArtMuseumList(APIView):
 class SeoulisArtMuseumDetail(APIView):
     renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
 
+    @swagger_auto_schema(tags=["서울은미술관"])
     def get(self, request, pk):
         try:
             detail_info = SeoulisArtMuseum.objects.get(id=pk)
@@ -174,6 +182,7 @@ class SeoulisArtMuseumDetail(APIView):
 class LandMarkFavoriteList(APIView):
     renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
 
+    @swagger_auto_schema(tags=["즐겨찾기"])
     def get(self, request):
         favorites = LandmarkFavorite.objects.filter(USER_id=request.user.id).select_related("LANDMARK")
         serializer = LandMarkFavoriteListSerializer(favorites, many=True)
@@ -186,6 +195,7 @@ class LandMarkFavoriteList(APIView):
         operation_summary="즐겨찾기 등록",
         request_body=LandMarkFavoritePostSerializer,
         responses={201: LandMarkFavoriteListSerializer},
+        tags=["즐겨찾기"],
     )
     def post(self, request):
         lm_id = request.data["LANDMARK"]
