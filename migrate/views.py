@@ -125,6 +125,7 @@ def landmark(request):
                     SUBJECT="미술품",
                     startDate=None,
                     endDate=None,
+                    URL=None,
                 )
 
     ##### 문화공간 #####
@@ -163,6 +164,7 @@ def landmark(request):
                     SUBJECT=space.get("SUBJCODE", ""),
                     startDate=None,
                     endDate=None,
+                    URL=space.get("HOMEPAGE", ""),
                 )
 
     ##### 문화행사 #####
@@ -210,9 +212,7 @@ def landmark(request):
                         SUBJECT=event.get("CODENAME", ""),
                         startDate=event.get("STRTDATE"),
                         endDate=event.get("END_DATE"),
+                        URL=event.get("ORG_LINK", ""),
                     )
 
-    return JsonResponse({
-        "message": "Data saved successfully.",
-        "error_messages": error_messages
-    })
+    return JsonResponse({"message": "Data saved successfully.", "error_messages": error_messages})

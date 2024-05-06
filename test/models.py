@@ -104,6 +104,7 @@ class LandMark(models.Model):
     SUBJECT = models.CharField(max_length=300, default="")
     startDate = models.CharField(max_length=500, null=True)
     endDate = models.CharField(max_length=500, null=True)
+    URL = models.URLField(default="")
 
     @staticmethod
     def Q_search(search_word):
@@ -152,9 +153,9 @@ class LandmarkFavorite(models.Model):
     USER = models.ForeignKey(User, on_delete=models.CASCADE, related_name="favorites")
     CREATED_AT = models.DateTimeField(auto_now_add=True)
 
+
 class SearchHistory(models.Model):
     LANDMARK = models.ForeignKey(LandMark, on_delete=models.CASCADE, related_name="search_history")
     USER = models.ForeignKey(User, on_delete=models.CASCADE, related_name="search_history")
     LAST_SEARCHED_AT = models.DateTimeField(auto_now_add=True)
     CREATED_AT = models.DateTimeField(auto_now_add=True)
-
